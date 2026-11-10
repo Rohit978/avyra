@@ -24,10 +24,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Metadata Provider Adapters (PROV)
 
-- [ ] **PROV-01**: TMDB adapter fetches popular, trending, and detailed metadata for movies and TV shows via REST API
-- [ ] **PROV-02**: AniList adapter fetches anime metadata, formats, seasons, studios, and episode counts via GraphQL API
-- [ ] **PROV-03**: Provider adapters normalize disparate third-party payloads into standard `NormalizedMediaDTO` objects
-- [ ] **PROV-04**: Provider adapters enforce rate-limit delays, backoff with jitter, and handle transient network failures
+- [x] **PROV-01**: TMDB adapter fetches popular, trending, and detailed metadata for movies and TV shows via REST API
+- [x] **PROV-02**: AniList adapter fetches anime metadata, formats, seasons, studios, and episode counts via GraphQL API
+- [x] **PROV-03**: Provider adapters normalize disparate third-party payloads into standard `NormalizedMediaDTO` objects
+- [x] **PROV-04**: Provider adapters enforce rate-limit delays, backoff with jitter, and handle transient network failures
 
 ### Ingestion Engine (INGEST)
 
@@ -131,10 +131,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-03 | Phase 2 | Complete |
 | DATA-04 | Phase 2 | Complete |
 | DATA-05 | Phase 2 | Complete |
-| PROV-01 | Phase 3 | Pending |
-| PROV-02 | Phase 3 | Pending |
-| PROV-03 | Phase 3 | Pending |
-| PROV-04 | Phase 3 | Pending |
+| PROV-01 | Phase 3 | Complete |
+| PROV-02 | Phase 3 | Complete |
+| PROV-03 | Phase 3 | Complete |
+| PROV-04 | Phase 3 | Complete |
 | INGEST-01 | Phase 4 | Pending |
 | INGEST-02 | Phase 4 | Pending |
 | INGEST-03 | Phase 4 | Pending |

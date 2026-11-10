@@ -8,7 +8,7 @@ Cineverse is built incrementally as a modular monolith spanning 11 fine-grained 
 
 - [x] **Phase 1: Foundation & Environment Setup** - Docker Compose PostgreSQL, FastAPI skeleton, Next.js workspace, and health checks.
 - [x] **Phase 2: Database Architecture & Core Data Models** - Canonical media entity, external IDs, localized titles, seasons, episodes, and credits schemas with Alembic migrations.
-- [ ] **Phase 3: Metadata Provider Adapters** - TMDB REST client and AniList GraphQL client with normalized DTOs and rate-limit backoff.
+- [x] **Phase 3: Metadata Provider Adapters** - TMDB REST client and AniList GraphQL client with normalized DTOs and rate-limit backoff.
 - [ ] **Phase 4: Ingestion Engine & Deduplication Pipeline** - Idempotent batch ingestion commands, identity resolution, run logging, and error tracking.
 - [ ] **Phase 5: Search & Discovery Backend API** - PostgreSQL trigram & full-text search, autocomplete suggestions, and curated collection endpoints.
 - [ ] **Phase 6: Media Detail & Episode Hierarchy API** - Comprehensive detail endpoints with cast/crew, season/episode navigation, and provenance attribution.
@@ -65,9 +65,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Base adapter contract, common DTOs, and HTTPX client with retry/backoff
-- [ ] 03-02: TMDB REST API adapter implementation and mock fixture tests
-- [ ] 03-03: AniList GraphQL API adapter implementation and mock fixture tests
+- [x] 03-01: Base adapter contract, common DTOs, and HTTPX client with retry/backoff
+- [x] 03-02: TMDB REST API adapter implementation and mock fixture tests
+- [x] 03-03: AniList GraphQL API adapter implementation and mock fixture tests
 
 ### Phase 4: Ingestion Engine & Deduplication Pipeline
 **Goal**: Build a transactional, idempotent ingestion engine with identity resolution and execution run tracking.
@@ -211,7 +211,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Foundation & Environment Setup | 3/3 | Complete | 2026-11-11 |
 | 2. Database Architecture & Core Data Models | 3/3 | Complete | 2026-11-11 |
-| 3. Metadata Provider Adapters | 0/3 | Not started | - |
+| 3. Metadata Provider Adapters | 3/3 | Complete | 2026-11-11 |
 | 4. Ingestion Engine & Deduplication Pipeline | 0/3 | Not started | - |
 | 5. Search & Discovery Backend API | 0/3 | Not started | - |
 | 6. Media Detail & Episode Hierarchy API | 0/3 | Not started | - |
