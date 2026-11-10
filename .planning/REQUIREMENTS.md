@@ -66,11 +66,11 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Streaming & Playback Engine (PLAY)
 
-- [ ] **PLAY-01**: Backend exposes `/api/v1/media/{id}/playback-options` resolving internal UUID to external provider IDs and stream options
-- [ ] **PLAY-02**: System routes movie playback requests to allowlisted embed templates (including `vidbolt.xyz/movie/{TMDB_ID}` and `embed.reelsdownload.online/player/{TMDB_ID}`)
-- [ ] **PLAY-03**: System routes TV episode playback requests to allowlisted episode templates (`vidbolt.xyz/tv/{id}/{s}/{e}`) with correct season and episode indexing
-- [ ] **PLAY-04**: Frontend player component renders embed in a secure, sandboxed `<iframe>` preventing popup hijacks and unauthorized top-level redirects
-- [ ] **PLAY-05**: Player displays clear empty/fallback states when no external TMDB ID or valid stream route is available
+- [x] **PLAY-01**: Backend exposes `/api/v1/media/{id}/playback-options` resolving internal UUID to external provider IDs and stream options
+- [x] **PLAY-02**: System routes movie playback requests to allowlisted embed templates (including `vidbolt.xyz/movie/{TMDB_ID}` and `embed.reelsdownload.online/player/{TMDB_ID}`)
+- [x] **PLAY-03**: System routes TV episode playback requests to allowlisted episode templates (`vidbolt.xyz/tv/{id}/{s}/{e}`) with correct season and episode indexing
+- [x] **PLAY-04**: Frontend player component renders embed in a secure, sandboxed `<iframe>` preventing popup hijacks and unauthorized top-level redirects
+- [x] **PLAY-05**: Player displays clear empty/fallback states when no external TMDB ID or valid stream route is available
 
 ### Frontend UI & Experience (UI)
 
@@ -155,11 +155,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIST-02 | Phase 8 | Complete |
 | LIST-03 | Phase 8 | Complete |
 | LIST-04 | Phase 8 | Complete |
-| PLAY-01 | Phase 9 | Pending |
-| PLAY-02 | Phase 9 | Pending |
-| PLAY-03 | Phase 9 | Pending |
-| PLAY-04 | Phase 9 | Pending |
-| PLAY-05 | Phase 9 | Pending |
+| PLAY-01 | Phase 9 | Complete |
+| PLAY-02 | Phase 9 | Complete |
+| PLAY-03 | Phase 9 | Complete |
+| PLAY-04 | Phase 9 | Complete |
+| PLAY-05 | Phase 9 | Complete |
 | UI-01 | Phase 10 | Pending |
 | UI-02 | Phase 10 | Pending |
 | UI-03 | Phase 10 | Pending |

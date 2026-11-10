@@ -12,9 +12,11 @@ from backend.app.schemas.detail import (
     SeasonDetailDTO,
     SeasonSummaryDTO,
 )
+from backend.app.schemas.playback import PlaybackOptionsResponseDTO
 from backend.app.schemas.search import MediaSummaryDTO, PaginatedResponse
 from backend.app.services.detail import MediaDetailService
 from backend.app.services.discovery import DiscoveryService
+from backend.app.services.playback import PlaybackService
 
 router = APIRouter()
 
@@ -170,3 +172,28 @@ async def get_episode_detail(
             detail=f"Episode S{season_number}E{episode_number} not found for this media item",
         )
     return episode
+
+
+@router.get(
+    "/{media_id}/playback-options",
+    response_model=PlaybackOptionsResponseDTO,
+    summary="Get video playback embed options",
+)
+async def get_playback_options(
+    media_id: UUID,
+    season: Optional[int] = Query(None, description="Optional season number for episodic content"),
+    episode: Optional[int] = Query(None, description="Optional episode number for episodic content"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve configured and allowlisted streaming embed sources for a media title or specific episode.
+    """
+    playback_options = await PlaybackService.resolve_playback(
+        db=db,
+        media_id=media_id,
+        season_number=season,
+        episode_number=episode,
+    )
+    if not playback_options:
+        raise HTTPException(status_code=404, detail="Media item not found")
+    return playback_options

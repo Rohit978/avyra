@@ -156,12 +156,11 @@ Plans:
   3. System resolves TV episodes to allowlisted episode URLs (`vidbolt.xyz/tv/{id}/{s}/{e}`) with exact season/episode numbers.
   4. Frontend player module enforces sandbox attributes preventing top-level redirects and popups.
   5. Player displays clear fallback state when external TMDB ID is missing.
-**Plans**: TBD
 
 Plans:
-- [ ] 09-01: Playback routing service and configurable embed template engine
-- [ ] 09-02: Playback options API endpoint with domain allowlist validation
-- [ ] 09-03: Sandboxed iframe player component with fullscreen and fallback states
+- [x] 09-01: Playback options service and TMDB ID resolution
+- [x] 09-02: Parameterized URL generator and domain allowlist validation
+- [x] 09-03: Secure iframe sandbox helper and playback API endpoints
 
 ### Phase 10: Frontend Discovery & Cinematic Web UI
 **Goal**: Build a responsive Next.js web application with a dark cinematic aesthetic, discovery carousels, search popover, detail tabs, and player view.
