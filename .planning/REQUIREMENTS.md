@@ -31,10 +31,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Ingestion Engine (INGEST)
 
-- [ ] **INGEST-01**: Ingestion CLI command imports trending, popular, and seasonal media batches with configurable page limits
-- [ ] **INGEST-02**: Ingestion pipeline executes idempotent upserts preventing duplicate media creation on repeated runs
-- [ ] **INGEST-03**: Ingestion resolver links external provider records to existing canonical media without fuzzy auto-merge risks
-- [ ] **INGEST-04**: Ingestion system records execution status, start/end timestamps, record counts, and failure summaries in `ingestion_runs`
+- [x] **INGEST-01**: Ingestion CLI command imports trending, popular, and seasonal media batches with configurable page limits
+- [x] **INGEST-02**: Ingestion pipeline executes idempotent upserts preventing duplicate media creation on repeated runs
+- [x] **INGEST-03**: Ingestion resolver links external provider records to existing canonical media without fuzzy auto-merge risks
+- [x] **INGEST-04**: Ingestion system records execution status, start/end timestamps, record counts, and failure summaries in `ingestion_runs`
 
 ### Discovery & Search (SRCH)
 
@@ -135,10 +135,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROV-02 | Phase 3 | Complete |
 | PROV-03 | Phase 3 | Complete |
 | PROV-04 | Phase 3 | Complete |
-| INGEST-01 | Phase 4 | Pending |
-| INGEST-02 | Phase 4 | Pending |
-| INGEST-03 | Phase 4 | Pending |
-| INGEST-04 | Phase 4 | Pending |
+| INGEST-01 | Phase 4 | Complete |
+| INGEST-02 | Phase 4 | Complete |
+| INGEST-03 | Phase 4 | Complete |
+| INGEST-04 | Phase 4 | Complete |
 | SRCH-01 | Phase 5 | Pending |
 | SRCH-02 | Phase 5 | Pending |
 | SRCH-03 | Phase 5 | Pending |

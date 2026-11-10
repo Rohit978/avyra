@@ -9,6 +9,7 @@ from backend.app.models.season import Season
 from backend.app.models.episode import Episode
 from backend.app.models.person import Person
 from backend.app.models.credit import Credit
+from backend.app.models.ingestion import IngestionRun, IngestionStatus
 
 __all__ = [
     "Base",
@@ -26,4 +27,6 @@ __all__ = [
     "Episode",
     "Person",
     "Credit",
+    "IngestionRun",
+    "IngestionStatus",
 ]

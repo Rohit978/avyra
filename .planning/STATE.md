@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-11-11)
 
 **Core value:** Unified provider-independent media discovery and tracking that seamlessly aggregates and normalizes multi-source metadata into one high-integrity catalogue with lightning-fast search, robust user libraries, and reliable media playback integration.
-**Current focus:** Phase 4: Ingestion Engine & Deduplication Pipeline
+**Current focus:** Phase 5: Search & Discovery Backend API
 
 ## Current Position
 
-Phase: 4 of 11 (Ingestion Engine & Deduplication Pipeline)
+Phase: 5 of 11 (Search & Discovery Backend API)
 Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-11-11 — Completed Phase 3 (Metadata Provider Adapters)
+Last activity: 2026-11-11 — Completed Phase 4 (Ingestion Engine & Deduplication Pipeline)
 
-Progress: [███░░░░░░░] 26%
+Progress: [████░░░░░░] 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 12
 - Average duration: 5 min
-- Total execution time: 0.75 hours
+- Total execution time: 1.0 hours
 
 **By Phase:**
 
@@ -30,6 +30,7 @@ Progress: [███░░░░░░░] 26%
 | 01-foundation-environment-setup | 3 | 15 min | 5 min |
 | 02-database-architecture-core-data-models | 3 | 15 min | 5 min |
 | 03-metadata-provider-adapters | 3 | 15 min | 5 min |
+| 04-ingestion-engine-deduplication-pipeline | 3 | 15 min | 5 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min, 5 min, 5 min, 5 min, 5 min
