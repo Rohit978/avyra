@@ -110,12 +110,11 @@ Plans:
   2. Credits endpoint returns cast and crew members with characters, roles, and profile image links.
   3. Seasons and episodes endpoints deliver structured hierarchical episode listings.
   4. Detail payload clearly includes provider provenance and attribution tags.
-**Plans**: TBD
 
 Plans:
-- [ ] 06-01: Media detail REST endpoints and response schemas
-- [ ] 06-02: Cast, crew, and credits query endpoints
-- [ ] 06-03: Season and episode navigation endpoints with provenance metadata
+- [x] 06-01: Media detail REST endpoints and response schemas
+- [x] 06-02: Cast, crew, and credits query endpoints
+- [x] 06-03: Season and episode navigation endpoints with provenance metadata
 
 ### Phase 7: User Authentication & Security
 **Goal**: Build a secure account system with Argon2id password hashing, session tokens, and route protection.

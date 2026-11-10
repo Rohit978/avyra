@@ -1,10 +1,19 @@
-from typing import Optional
+from typing import List, Optional
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.database import get_db
 from backend.app.models.enums import MediaStatus, MediaType
+from backend.app.schemas.detail import (
+    EpisodeDTO,
+    MediaCreditsDTO,
+    MediaDetailDTO,
+    SeasonDetailDTO,
+    SeasonSummaryDTO,
+)
 from backend.app.schemas.search import MediaSummaryDTO, PaginatedResponse
+from backend.app.services.detail import MediaDetailService
 from backend.app.services.discovery import DiscoveryService
 
 router = APIRouter()
@@ -70,3 +79,94 @@ async def get_curated_collection(
         page=page,
         limit=limit,
     )
+
+
+@router.get("/{media_id}", response_model=MediaDetailDTO, summary="Get full media detail")
+async def get_media_detail(
+    media_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve comprehensive media metadata including genres, alternate titles, provenance external IDs, and season counts.
+    """
+    detail = await MediaDetailService.get_media_detail(db=db, media_id=media_id)
+    if not detail:
+        raise HTTPException(status_code=404, detail="Media item not found")
+    return detail
+
+
+@router.get("/{media_id}/credits", response_model=MediaCreditsDTO, summary="Get cast and crew credits")
+async def get_media_credits(
+    media_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve cast and crew credits with character roles, departments, jobs, and profile pictures.
+    """
+    credits = await MediaDetailService.get_media_credits(db=db, media_id=media_id)
+    if credits is None:
+        raise HTTPException(status_code=404, detail="Media item not found")
+    return credits
+
+
+@router.get("/{media_id}/seasons", response_model=List[SeasonSummaryDTO], summary="Get seasons listing")
+async def get_media_seasons(
+    media_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve season listing for episodic media.
+    """
+    seasons = await MediaDetailService.get_media_seasons(db=db, media_id=media_id)
+    if seasons is None:
+        raise HTTPException(status_code=404, detail="Media item not found")
+    return seasons
+
+
+@router.get(
+    "/{media_id}/seasons/{season_number}",
+    response_model=SeasonDetailDTO,
+    summary="Get season detail with episodes",
+)
+async def get_season_detail(
+    media_id: UUID,
+    season_number: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve full season information including its nested episode listings.
+    """
+    season = await MediaDetailService.get_season_detail(
+        db=db, media_id=media_id, season_number=season_number
+    )
+    if not season:
+        raise HTTPException(status_code=404, detail=f"Season {season_number} not found for this media item")
+    return season
+
+
+@router.get(
+    "/{media_id}/seasons/{season_number}/episodes/{episode_number}",
+    response_model=EpisodeDTO,
+    summary="Get specific episode detail",
+)
+async def get_episode_detail(
+    media_id: UUID,
+    season_number: int,
+    episode_number: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve specific episode detail with runtime, still image, and overview.
+    """
+    episode = await MediaDetailService.get_episode_detail(
+        db=db,
+        media_id=media_id,
+        season_number=season_number,
+        episode_number=episode_number,
+    )
+    if not episode:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Episode S{season_number}E{episode_number} not found for this media item",
+        )
+    return episode

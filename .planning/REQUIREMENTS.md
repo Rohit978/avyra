@@ -45,10 +45,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Media Detail & Content (DETL)
 
-- [ ] **DETL-01**: User can view full media detail page including synopsis, release date, genres, ratings, and artwork
-- [ ] **DETL-02**: User can browse cast and crew credits with character names and profile images
-- [ ] **DETL-03**: User can navigate seasons and view episode listings with episode titles, numbers, and overviews
-- [ ] **DETL-04**: User can view provider provenance and attribution for metadata sources
+- [x] **DETL-01**: User can view full media detail page including synopsis, release date, genres, ratings, and artwork
+- [x] **DETL-02**: User can browse cast and crew credits with character names and profile images
+- [x] **DETL-03**: User can navigate seasons and view episode listings with episode titles, numbers, and overviews
+- [x] **DETL-04**: User can view provider provenance and attribution for metadata sources
 
 ### User Authentication & Accounts (AUTH)
 
@@ -143,10 +143,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRCH-02 | Phase 5 | Complete |
 | SRCH-03 | Phase 5 | Complete |
 | SRCH-04 | Phase 5 | Complete |
-| DETL-01 | Phase 6 | Pending |
-| DETL-02 | Phase 6 | Pending |
-| DETL-03 | Phase 6 | Pending |
-| DETL-04 | Phase 6 | Pending |
+| DETL-01 | Phase 6 | Complete |
+| DETL-02 | Phase 6 | Complete |
+| DETL-03 | Phase 6 | Complete |
+| DETL-04 | Phase 6 | Complete |
 | AUTH-01 | Phase 7 | Pending |
 | AUTH-02 | Phase 7 | Pending |
 | AUTH-03 | Phase 7 | Pending |
