@@ -48,6 +48,9 @@ out/
 
 # Database data
 postgres_data/
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE & OS
 .idea/
