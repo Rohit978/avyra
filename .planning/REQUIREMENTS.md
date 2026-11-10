@@ -38,10 +38,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Discovery & Search (SRCH)
 
-- [ ] **SRCH-01**: User can search media titles and alternate titles with typo-tolerant PostgreSQL trigram (`pg_trgm`) and full-text search
-- [ ] **SRCH-02**: User can receive debounced search autocomplete suggestions within 300ms
-- [ ] **SRCH-03**: User can filter media by media type, genre, release year, and status with paginated results
-- [ ] **SRCH-04**: User can browse curated home page collections (trending, popular, top-rated, upcoming)
+- [x] **SRCH-01**: User can search media titles and alternate titles with typo-tolerant PostgreSQL trigram (`pg_trgm`) and full-text search
+- [x] **SRCH-02**: User can receive debounced search autocomplete suggestions within 300ms
+- [x] **SRCH-03**: User can filter media by media type, genre, release year, and status with paginated results
+- [x] **SRCH-04**: User can browse curated home page collections (trending, popular, top-rated, upcoming)
 
 ### Media Detail & Content (DETL)
 
@@ -139,10 +139,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INGEST-02 | Phase 4 | Complete |
 | INGEST-03 | Phase 4 | Complete |
 | INGEST-04 | Phase 4 | Complete |
-| SRCH-01 | Phase 5 | Pending |
-| SRCH-02 | Phase 5 | Pending |
-| SRCH-03 | Phase 5 | Pending |
-| SRCH-04 | Phase 5 | Pending |
+| SRCH-01 | Phase 5 | Complete |
+| SRCH-02 | Phase 5 | Complete |
+| SRCH-03 | Phase 5 | Complete |
+| SRCH-04 | Phase 5 | Complete |
 | DETL-01 | Phase 6 | Pending |
 | DETL-02 | Phase 6 | Pending |
 | DETL-03 | Phase 6 | Pending |

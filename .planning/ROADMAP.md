@@ -94,12 +94,12 @@ Plans:
   2. Autocomplete suggestions endpoint responds with matching titles in under 300ms.
   3. Browse endpoints filter accurately by media type, genre, release year, and status with pagination.
   4. Curated endpoints return trending, popular, top-rated, and upcoming titles.
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: PostgreSQL GIN trigram and full-text search indexes and query builders
-- [ ] 05-02: Search API endpoints with autocomplete suggestions and pagination
-- [ ] 05-03: Filtered catalogue browsing and curated collection endpoints
+- [x] 05-01: PostgreSQL GIN trigram and full-text search indexes and query builders
+- [x] 05-02: Search API endpoints with autocomplete suggestions and pagination
+- [x] 05-03: Filtered catalogue browsing and curated collection endpoints
 
 ### Phase 6: Media Detail, Credits & Episode Hierarchy API
 **Goal**: Provide rich media detail endpoints delivering complete metadata, cast/crew credits, season/episode trees, and provider attribution.
