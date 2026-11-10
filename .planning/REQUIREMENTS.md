@@ -74,11 +74,11 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Frontend UI & Experience (UI)
 
-- [ ] **UI-01**: User can experience a responsive, dark cinematic home page with hero showcase and horizontal scroll carousels
-- [ ] **UI-02**: User can browse dedicated listing pages for `/movies`, `/tv`, and `/anime` with responsive card grids
-- [ ] **UI-03**: User can search from navigation header with immediate suggestion popover and full results page
-- [ ] **UI-04**: User can navigate tabs on detail pages (Overview, Cast, Episodes, Watch/Player) across mobile and desktop
-- [ ] **UI-05**: User interface displays skeleton loaders during loading states and graceful error boundaries on network failure
+- [x] **UI-01**: User can experience a responsive, dark cinematic home page with hero showcase and horizontal scroll carousels
+- [x] **UI-02**: User can browse dedicated listing pages for `/movies`, `/tv`, and `/anime` with responsive card grids
+- [x] **UI-03**: User can search from navigation header with immediate suggestion popover and full results page
+- [x] **UI-04**: User can navigate tabs on detail pages (Overview, Cast, Episodes, Watch/Player) across mobile and desktop
+- [x] **UI-05**: User interface displays skeleton loaders during loading states and graceful error boundaries on network failure
 
 ### Administration & Operations (ADMIN)
 
@@ -160,11 +160,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PLAY-03 | Phase 9 | Complete |
 | PLAY-04 | Phase 9 | Complete |
 | PLAY-05 | Phase 9 | Complete |
-| UI-01 | Phase 10 | Pending |
-| UI-02 | Phase 10 | Pending |
-| UI-03 | Phase 10 | Pending |
-| UI-04 | Phase 10 | Pending |
-| UI-05 | Phase 10 | Pending |
+| UI-01 | Phase 10 | Complete |
+| UI-02 | Phase 10 | Complete |
+| UI-03 | Phase 10 | Complete |
+| UI-04 | Phase 10 | Complete |
+| UI-05 | Phase 10 | Complete |
 | ADMIN-01 | Phase 11 | Pending |
 | ADMIN-02 | Phase 11 | Pending |
 | ADMIN-03 | Phase 11 | Pending |

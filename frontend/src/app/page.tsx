@@ -1,20 +1,49 @@
-export default function HomePage() {
+import React from "react";
+import HeroShowcase from "../components/HeroShowcase";
+import MediaCarousel from "../components/MediaCarousel";
+import { getCuratedCollection } from "../lib/api";
+
+export default async function HomePage() {
+  const [trending, popularMovies, popularTv, upcoming] = await Promise.all([
+    getCuratedCollection("trending"),
+    getCuratedCollection("popular", "MOVIE"),
+    getCuratedCollection("popular", "TV_SHOW"),
+    getCuratedCollection("upcoming"),
+  ]);
+
+  const heroItem = trending[0] || popularMovies[0];
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-2xl space-y-6">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-white">
-          CINE<span className="text-primary">VERSE</span>
-        </h1>
-        <p className="text-lg text-gray-400">
-          Unified media discovery across movies, television series, anime, and documentaries.
-        </p>
-        <div className="pt-4 flex items-center justify-center gap-4">
-          <div className="rounded-full bg-surface-elevated px-4 py-2 text-sm border border-surface-border text-gray-300">
-            Phase 1: Foundation Active
-          </div>
-        </div>
+    <div className="flex flex-col w-full pb-16">
+      {/* Hero Banner */}
+      {heroItem && <HeroShowcase media={heroItem} />}
+
+      {/* Media Carousels */}
+      <div className="space-y-4 -mt-6 sm:-mt-10 relative z-20">
+        <MediaCarousel
+          title="Trending Now"
+          items={trending}
+          viewAllHref="/movies"
+        />
+
+        <MediaCarousel
+          title="Popular Movies"
+          items={popularMovies}
+          viewAllHref="/movies"
+        />
+
+        <MediaCarousel
+          title="Binge-Worthy TV Series"
+          items={popularTv}
+          viewAllHref="/tv"
+        />
+
+        <MediaCarousel
+          title="Anticipated & Upcoming"
+          items={upcoming}
+          viewAllHref="/movies"
+        />
       </div>
-    </main>
+    </div>
   );
 }
-

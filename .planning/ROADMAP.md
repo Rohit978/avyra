@@ -172,14 +172,10 @@ Plans:
   3. Global search bar in header provides immediate debounced suggestions and full results page.
   4. Detail page renders overview, cast, season/episode selector, watchlist toggle, and player view.
   5. UI displays skeleton loaders during data fetch and graceful error boundaries on network failure.
-**Plans**: TBD
-
 Plans:
-- [ ] 10-01: Next.js layout, dark cinematic styling, navigation header, and API client
-- [ ] 10-02: Home page hero banner and horizontal media carousels
-- [ ] 10-03: Browse grid pages with multi-filter drawer and debounced search popover
-- [ ] 10-04: Media detail page with tabbed cast/episode views and watchlist controls
-- [ ] 10-05: Integrated watch page with sandboxed video player and episode switcher
+- [x] 10-01: Global navigation header, search popover with debounced suggestions, and footer
+- [x] 10-02: Home page with hero showcase, trending carousels, and media cards with skeleton loaders
+- [x] 10-03: Browse pages, search results, and media detail view with tabs and player embed
 
 ### Phase 11: Admin Health, Diagnostics & Operational Hardening
 **Goal**: Deliver an admin diagnostic interface, error retry mechanisms, backup/restore scripts, and end-to-end integration verification.
