@@ -140,12 +140,11 @@ Plans:
   2. User can add and remove canonical media titles from their watchlists.
   3. User can toggle watch status between Plan to Watch, Watching, Completed, and Dropped.
   4. User can track watched episodes and season progress for TV shows and anime.
-**Plans**: TBD
 
 Plans:
-- [ ] 08-01: Watchlist and watchlist item models and CRUD API endpoints
-- [ ] 08-02: Viewing status and episode progress tracking models and endpoints
-- [ ] 08-03: Ownership security tests ensuring strict isolation between user accounts
+- [x] 08-01: Watchlist and watchlist item models and CRUD API endpoints
+- [x] 08-02: Viewing status and episode progress tracking models and endpoints
+- [x] 08-03: Ownership security tests ensuring strict isolation between user accounts
 
 ### Phase 9: Playback & Streaming Embed Engine
 **Goal**: Implement a safe, configurable playback service mapping media to allowlisted embed templates (`reelsdownload`, `vidbolt`) with strict iframe sandboxing.

@@ -1,6 +1,6 @@
 """Database models package."""
 from backend.app.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from backend.app.models.enums import CreditType, MediaStatus, MediaType, UserRole
+from backend.app.models.enums import CreditType, MediaStatus, MediaType, UserRole, ViewingStatus
 from backend.app.models.genre import Genre, media_genres
 from backend.app.models.media import Media
 from backend.app.models.external_id import ExternalID
@@ -11,6 +11,8 @@ from backend.app.models.person import Person
 from backend.app.models.credit import Credit
 from backend.app.models.ingestion import IngestionRun, IngestionStatus
 from backend.app.models.user import User
+from backend.app.models.watchlist import Watchlist, WatchlistItem
+from backend.app.models.progress import UserEpisodeProgress, UserMediaProgress
 
 __all__ = [
     "Base",
@@ -20,6 +22,7 @@ __all__ = [
     "MediaStatus",
     "CreditType",
     "UserRole",
+    "ViewingStatus",
     "Genre",
     "media_genres",
     "Media",
@@ -32,4 +35,8 @@ __all__ = [
     "IngestionRun",
     "IngestionStatus",
     "User",
+    "Watchlist",
+    "WatchlistItem",
+    "UserMediaProgress",
+    "UserEpisodeProgress",
 ]

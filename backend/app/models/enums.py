@@ -30,3 +30,11 @@ class UserRole(str, enum.Enum):
     """User access and administration roles."""
     USER = "USER"
     ADMIN = "ADMIN"
+
+
+class ViewingStatus(str, enum.Enum):
+    """Personal media viewing progress state."""
+    PLAN_TO_WATCH = "PLAN_TO_WATCH"
+    WATCHING = "WATCHING"
+    COMPLETED = "COMPLETED"
+    DROPPED = "DROPPED"

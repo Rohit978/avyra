@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-11-11)
 
 **Core value:** Unified provider-independent media discovery and tracking that seamlessly aggregates and normalizes multi-source metadata into one high-integrity catalogue with lightning-fast search, robust user libraries, and reliable media playback integration.
-**Current focus:** Phase 8: Personal Watchlists & Viewing Progress
+**Current focus:** Phase 9: Playback & Streaming Embed Engine
 
 ## Current Position
 
-Phase: 8 of 11 (Personal Watchlists & Viewing Progress)
+Phase: 9 of 11 (Playback & Streaming Embed Engine)
 Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-11-11 — Completed Phase 7 (User Authentication & Security)
+Last activity: 2026-11-11 — Completed Phase 8 (Personal Watchlists & Viewing Progress)
 
-Progress: [███████░░░] 64%
+Progress: [████████░░] 73%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 24
 - Average duration: 5 min
-- Total execution time: 1.75 hours
+- Total execution time: 2.0 hours
 
 **By Phase:**
 
@@ -34,6 +34,7 @@ Progress: [███████░░░] 64%
 | 05-search-discovery-backend-api | 3 | 15 min | 5 min |
 | 06-media-detail-credits-episode-hierarchy-api | 3 | 15 min | 5 min |
 | 07-user-authentication-security | 3 | 15 min | 5 min |
+| 08-personal-watchlists-viewing-progress | 3 | 15 min | 5 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min, 5 min, 5 min, 5 min, 5 min

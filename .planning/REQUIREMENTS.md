@@ -59,10 +59,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Personal Library & Progress Tracking (LIST)
 
-- [ ] **LIST-01**: User can create, rename, and delete custom named watchlists
-- [ ] **LIST-02**: User can add and remove titles from their personal watchlists
-- [ ] **LIST-03**: User can update viewing status (Plan to Watch, Watching, Completed, Dropped)
-- [ ] **LIST-04**: User can track watched episodes and season progress for TV shows and anime
+- [x] **LIST-01**: User can create, rename, and delete custom named watchlists
+- [x] **LIST-02**: User can add and remove titles from their personal watchlists
+- [x] **LIST-03**: User can update viewing status (Plan to Watch, Watching, Completed, Dropped)
+- [x] **LIST-04**: User can track watched episodes and season progress for TV shows and anime
 
 ### Streaming & Playback Engine (PLAY)
 
@@ -151,10 +151,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 7 | Complete |
 | AUTH-03 | Phase 7 | Complete |
 | AUTH-04 | Phase 7 | Complete |
-| LIST-01 | Phase 8 | Pending |
-| LIST-02 | Phase 8 | Pending |
-| LIST-03 | Phase 8 | Pending |
-| LIST-04 | Phase 8 | Pending |
+| LIST-01 | Phase 8 | Complete |
+| LIST-02 | Phase 8 | Complete |
+| LIST-03 | Phase 8 | Complete |
+| LIST-04 | Phase 8 | Complete |
 | PLAY-01 | Phase 9 | Pending |
 | PLAY-02 | Phase 9 | Pending |
 | PLAY-03 | Phase 9 | Pending |
