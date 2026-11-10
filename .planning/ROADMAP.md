@@ -6,7 +6,7 @@ Cineverse is built incrementally as a modular monolith spanning 11 fine-grained 
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Environment Setup** - Docker Compose PostgreSQL, FastAPI skeleton, Next.js workspace, and health checks.
+- [x] **Phase 1: Foundation & Environment Setup** - Docker Compose PostgreSQL, FastAPI skeleton, Next.js workspace, and health checks.
 - [ ] **Phase 2: Database Architecture & Core Data Models** - Canonical media entity, external IDs, localized titles, seasons, episodes, and credits schemas with Alembic migrations.
 - [ ] **Phase 3: Metadata Provider Adapters** - TMDB REST client and AniList GraphQL client with normalized DTOs and rate-limit backoff.
 - [ ] **Phase 4: Ingestion Engine & Deduplication Pipeline** - Idempotent batch ingestion commands, identity resolution, run logging, and error tracking.
@@ -32,9 +32,9 @@ Cineverse is built incrementally as a modular monolith spanning 11 fine-grained 
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: Docker Compose and monorepo workspace scaffolding
-- [ ] 01-02: FastAPI service skeleton, configuration, and health check endpoint
-- [ ] 01-03: Async SQLAlchemy 2.0 database engine and Alembic setup
+- [x] 01-01: Docker Compose and monorepo workspace scaffolding
+- [x] 01-02: FastAPI service skeleton, configuration, and health check endpoint
+- [x] 01-03: Async SQLAlchemy 2.0 database engine and Alembic setup
 
 ### Phase 2: Database Architecture & Core Data Models
 **Goal**: Design and migrate all relational schema entities including canonical media, provider mappings, localized titles, seasons, episodes, and credits.
@@ -209,7 +209,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Environment Setup | 0/3 | Not started | - |
+| 1. Foundation & Environment Setup | 3/3 | Complete | 2026-11-11 |
 | 2. Database Architecture & Core Data Models | 0/3 | Not started | - |
 | 3. Metadata Provider Adapters | 0/3 | Not started | - |
 | 4. Ingestion Engine & Deduplication Pipeline | 0/3 | Not started | - |
@@ -220,3 +220,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Playback & Streaming Embed Engine | 0/3 | Not started | - |
 | 10. Frontend Discovery & Cinematic Web UI | 0/5 | Not started | - |
 | 11. Admin Health, Diagnostics & Operational Hardening | 0/4 | Not started | - |
+
