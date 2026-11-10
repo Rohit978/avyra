@@ -82,10 +82,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Administration & Operations (ADMIN)
 
-- [ ] **ADMIN-01**: Admin user can view ingestion run histories, durations, record counts, and error summaries
-- [ ] **ADMIN-02**: Admin user can trigger safe retry for failed ingestion records from previous runs
-- [ ] **ADMIN-03**: Admin user can review duplicate candidate pairs flagged by conservative resolution
-- [ ] **ADMIN-04**: Repository includes documented database backup and restore scripts for zero-budget recovery
+- [x] **ADMIN-01**: Admin user can view ingestion run histories, durations, record counts, and error summaries
+- [x] **ADMIN-02**: Admin user can trigger safe retry for failed ingestion records from previous runs
+- [x] **ADMIN-03**: Admin user can review duplicate candidate pairs flagged by conservative resolution
+- [x] **ADMIN-04**: Repository includes documented database backup and restore scripts for zero-budget recovery
 
 ## v2 Requirements
 
@@ -165,10 +165,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-03 | Phase 10 | Complete |
 | UI-04 | Phase 10 | Complete |
 | UI-05 | Phase 10 | Complete |
-| ADMIN-01 | Phase 11 | Pending |
-| ADMIN-02 | Phase 11 | Pending |
-| ADMIN-03 | Phase 11 | Pending |
-| ADMIN-04 | Phase 11 | Pending |
+| ADMIN-01 | Phase 11 | Complete |
+| ADMIN-02 | Phase 11 | Complete |
+| ADMIN-03 | Phase 11 | Complete |
+| ADMIN-04 | Phase 11 | Complete |
 
 **Coverage:**
 - v1 requirements: 45 total

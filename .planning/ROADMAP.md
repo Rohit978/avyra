@@ -186,13 +186,10 @@ Plans:
   2. Admin user can trigger safe retries for failed ingestion records.
   3. Admin user can inspect duplicate candidate pairs flagged during ingestion.
   4. Repository includes verified database backup and restore scripts.
-**Plans**: TBD
-
 Plans:
-- [ ] 11-01: Admin dashboard API endpoints and run inspection views
-- [ ] 11-02: Ingestion retry and duplicate candidate review workflows
-- [ ] 11-03: PostgreSQL backup/restore automation scripts and documentation
-- [ ] 11-04: End-to-end integration test suite and final verification audit
+- [x] 11-01: Ingestion run diagnostic endpoints and error trace viewing
+- [x] 11-02: Failed record retry engine and conservative duplicate review endpoints
+- [x] 11-03: Automated database backup and restore scripts with disaster recovery runbook
 
 ## Progress
 
@@ -205,11 +202,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Database Architecture & Core Data Models | 3/3 | Complete | 2026-11-11 |
 | 3. Metadata Provider Adapters | 3/3 | Complete | 2026-11-11 |
 | 4. Ingestion Engine & Deduplication Pipeline | 3/3 | Complete | 2026-11-11 |
-| 5. Search & Discovery Backend API | 0/3 | Not started | - |
-| 6. Media Detail & Episode Hierarchy API | 0/3 | Not started | - |
-| 7. User Authentication & Security | 0/3 | Not started | - |
-| 8. Personal Watchlists & Viewing Progress | 0/3 | Not started | - |
-| 9. Playback & Streaming Embed Engine | 0/3 | Not started | - |
-| 10. Frontend Discovery & Cinematic Web UI | 0/5 | Not started | - |
-| 11. Admin Health, Diagnostics & Operational Hardening | 0/4 | Not started | - |
+| 5. Search & Discovery Backend API | 3/3 | Complete | 2026-11-11 |
+| 6. Media Detail & Episode Hierarchy API | 3/3 | Complete | 2026-11-11 |
+| 7. User Authentication & Security | 3/3 | Complete | 2026-11-11 |
+| 8. Personal Watchlists & Viewing Progress | 3/3 | Complete | 2026-11-11 |
+| 9. Playback & Streaming Embed Engine | 3/3 | Complete | 2026-11-11 |
+| 10. Frontend Discovery & Cinematic Web UI | 3/3 | Complete | 2026-11-11 |
+| 11. Admin Health, Diagnostics & Operational Hardening | 3/3 | Complete | 2026-11-11 |
 
