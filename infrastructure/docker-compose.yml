@@ -20,3 +20,4 @@ services:
 volumes:
   postgres_data:
     name: cineverse_postgres_data
+

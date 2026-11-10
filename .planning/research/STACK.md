@@ -82,3 +82,4 @@ npm install -D typescript @types/node @types/react tailwindcss postcss autoprefi
 ---
 *Stack research for: Media Catalogue & Discovery Platform*
 *Researched: 2026-11-11*
+

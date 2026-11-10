@@ -101,3 +101,4 @@ Features that seem good but create problems.
 ---
 *Feature research for: Media Catalogue & Discovery Platform*
 *Researched: 2026-11-11*
+

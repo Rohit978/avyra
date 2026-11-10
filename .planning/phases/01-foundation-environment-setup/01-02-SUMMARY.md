@@ -54,3 +54,4 @@ completed: 2026-11-11
 - Implemented `backend/app/core/config.py` with typed configuration for database, providers, embed URLs, and CORS.
 - Implemented `backend/app/main.py` exposing `/health` and `/` endpoints.
 - Implemented `backend/tests/` with async HTTPX test fixtures and health check assertions.
+

@@ -54,3 +54,4 @@ completed: 2026-11-11
 - Created root `.env.example` defining all database, API, and streaming embed provider variables.
 - Configured root `.gitignore` and `README.md` documentation.
 - Scaffolded `frontend/` workspace with TypeScript, Tailwind CSS, Lucide icons, and App Router layout.
+

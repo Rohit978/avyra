@@ -7,7 +7,7 @@ Cineverse is built incrementally as a modular monolith spanning 11 fine-grained 
 ## Phases
 
 - [x] **Phase 1: Foundation & Environment Setup** - Docker Compose PostgreSQL, FastAPI skeleton, Next.js workspace, and health checks.
-- [ ] **Phase 2: Database Architecture & Core Data Models** - Canonical media entity, external IDs, localized titles, seasons, episodes, and credits schemas with Alembic migrations.
+- [x] **Phase 2: Database Architecture & Core Data Models** - Canonical media entity, external IDs, localized titles, seasons, episodes, and credits schemas with Alembic migrations.
 - [ ] **Phase 3: Metadata Provider Adapters** - TMDB REST client and AniList GraphQL client with normalized DTOs and rate-limit backoff.
 - [ ] **Phase 4: Ingestion Engine & Deduplication Pipeline** - Idempotent batch ingestion commands, identity resolution, run logging, and error tracking.
 - [ ] **Phase 5: Search & Discovery Backend API** - PostgreSQL trigram & full-text search, autocomplete suggestions, and curated collection endpoints.
@@ -49,9 +49,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 02-01: Core media and external ID relational models with Alembic migrations
-- [ ] 02-02: Seasons, episodes, and media titles schema
-- [ ] 02-03: People and credits schema with relationship tests
+- [x] 02-01: Core media and external ID relational models with Alembic migrations
+- [x] 02-02: Seasons, episodes, and media titles schema
+- [x] 02-03: People and credits schema with relationship tests
 
 ### Phase 3: Metadata Provider Adapters
 **Goal**: Implement resilient, rate-limited adapters for TMDB and AniList that fetch raw payloads and normalize them into standard internal DTOs.
@@ -210,7 +210,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Environment Setup | 3/3 | Complete | 2026-11-11 |
-| 2. Database Architecture & Core Data Models | 0/3 | Not started | - |
+| 2. Database Architecture & Core Data Models | 3/3 | Complete | 2026-11-11 |
 | 3. Metadata Provider Adapters | 0/3 | Not started | - |
 | 4. Ingestion Engine & Deduplication Pipeline | 0/3 | Not started | - |
 | 5. Search & Discovery Backend API | 0/3 | Not started | - |

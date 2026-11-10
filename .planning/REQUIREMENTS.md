@@ -16,11 +16,11 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### Data Model & Persistence (DATA)
 
-- [ ] **DATA-01**: Database schema persists canonical `media` entity with UUID primary keys and types: MOVIE, TV_SHOW, ANIME, DOCUMENTARY, SHORT_FILM
-- [ ] **DATA-02**: Database schema enforces unique composite constraint on `external_ids(provider, external_id)` to map third-party IDs (TMDB, AniList, etc.)
-- [ ] **DATA-03**: Database schema persists localized primary and alternate titles with language tags in `media_titles`
-- [ ] **DATA-04**: Database schema persists seasons and episodes with hierarchical foreign keys and air dates for episodic media
-- [ ] **DATA-05**: Database schema persists cast, crew, characters, and department roles in `people` and `credits` tables
+- [x] **DATA-01**: Database schema persists canonical `media` entity with UUID primary keys and types: MOVIE, TV_SHOW, ANIME, DOCUMENTARY, SHORT_FILM
+- [x] **DATA-02**: Database schema enforces unique composite constraint on `external_ids(provider, external_id)` to map third-party IDs (TMDB, AniList, etc.)
+- [x] **DATA-03**: Database schema persists localized primary and alternate titles with language tags in `media_titles`
+- [x] **DATA-04**: Database schema persists seasons and episodes with hierarchical foreign keys and air dates for episodic media
+- [x] **DATA-05**: Database schema persists cast, crew, characters, and department roles in `people` and `credits` tables
 
 ### Metadata Provider Adapters (PROV)
 
@@ -126,11 +126,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FND-02 | Phase 1 | Complete |
 | FND-03 | Phase 1 | Complete |
 | FND-04 | Phase 1 | Complete |
-| DATA-01 | Phase 2 | Pending |
-| DATA-02 | Phase 2 | Pending |
-| DATA-03 | Phase 2 | Pending |
-| DATA-04 | Phase 2 | Pending |
-| DATA-05 | Phase 2 | Pending |
+| DATA-01 | Phase 2 | Complete |
+| DATA-02 | Phase 2 | Complete |
+| DATA-03 | Phase 2 | Complete |
+| DATA-04 | Phase 2 | Complete |
+| DATA-05 | Phase 2 | Complete |
 | PROV-01 | Phase 3 | Pending |
 | PROV-02 | Phase 3 | Pending |
 | PROV-03 | Phase 3 | Pending |
