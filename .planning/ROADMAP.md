@@ -125,12 +125,11 @@ Plans:
   2. User can log in and receive HttpOnly session cookie or JWT token.
   3. User can view and update profile information.
   4. Protected endpoints reject unauthenticated requests with HTTP 401 and enforce role authorization.
-**Plans**: TBD
 
 Plans:
-- [ ] 07-01: User model, security utilities, and Argon2id password hashing
-- [ ] 07-02: Registration, login, refresh, and logout endpoints
-- [ ] 07-03: Profile management and FastAPI authentication dependencies
+- [x] 07-01: User model, security utilities, and Argon2id password hashing
+- [x] 07-02: Registration, login, refresh, and logout endpoints
+- [x] 07-03: Profile management and FastAPI authentication dependencies
 
 ### Phase 8: Personal Watchlists & Viewing Progress
 **Goal**: Implement personal user watchlists, viewing status states, and episode progress tracking.

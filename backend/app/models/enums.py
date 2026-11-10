@@ -24,3 +24,9 @@ class CreditType(str, enum.Enum):
     """Type of talent participation in a title."""
     CAST = "CAST"
     CREW = "CREW"
+
+
+class UserRole(str, enum.Enum):
+    """User access and administration roles."""
+    USER = "USER"
+    ADMIN = "ADMIN"

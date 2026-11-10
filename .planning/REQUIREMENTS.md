@@ -52,10 +52,10 @@ Requirements for initial release. Each maps directly to roadmap phases.
 
 ### User Authentication & Accounts (AUTH)
 
-- [ ] **AUTH-01**: User can register an account with username, email, and password hashed using Argon2id
-- [ ] **AUTH-02**: User can securely log in and log out with HttpOnly session cookies / JWT tokens
-- [ ] **AUTH-03**: User can view and update their profile details
-- [ ] **AUTH-04**: API enforces authentication dependencies and role-based authorization for protected endpoints
+- [x] **AUTH-01**: User can register an account with username, email, and password hashed using Argon2id
+- [x] **AUTH-02**: User can securely log in and log out with HttpOnly session cookies / JWT tokens
+- [x] **AUTH-03**: User can view and update their profile details
+- [x] **AUTH-04**: API enforces authentication dependencies and role-based authorization for protected endpoints
 
 ### Personal Library & Progress Tracking (LIST)
 
@@ -147,10 +147,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DETL-02 | Phase 6 | Complete |
 | DETL-03 | Phase 6 | Complete |
 | DETL-04 | Phase 6 | Complete |
-| AUTH-01 | Phase 7 | Pending |
-| AUTH-02 | Phase 7 | Pending |
-| AUTH-03 | Phase 7 | Pending |
-| AUTH-04 | Phase 7 | Pending |
+| AUTH-01 | Phase 7 | Complete |
+| AUTH-02 | Phase 7 | Complete |
+| AUTH-03 | Phase 7 | Complete |
+| AUTH-04 | Phase 7 | Complete |
 | LIST-01 | Phase 8 | Pending |
 | LIST-02 | Phase 8 | Pending |
 | LIST-03 | Phase 8 | Pending |

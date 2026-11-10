@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-11-11)
 
 **Core value:** Unified provider-independent media discovery and tracking that seamlessly aggregates and normalizes multi-source metadata into one high-integrity catalogue with lightning-fast search, robust user libraries, and reliable media playback integration.
-**Current focus:** Phase 7: User Authentication & Security
+**Current focus:** Phase 8: Personal Watchlists & Viewing Progress
 
 ## Current Position
 
-Phase: 7 of 11 (User Authentication & Security)
+Phase: 8 of 11 (Personal Watchlists & Viewing Progress)
 Plan: 0 of 3 in current phase
 Status: Ready to plan
-Last activity: 2026-11-11 — Completed Phase 6 (Media Detail, Credits & Episode Hierarchy API)
+Last activity: 2026-11-11 — Completed Phase 7 (User Authentication & Security)
 
-Progress: [██████░░░░] 55%
+Progress: [███████░░░] 64%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 21
 - Average duration: 5 min
-- Total execution time: 1.5 hours
+- Total execution time: 1.75 hours
 
 **By Phase:**
 
@@ -33,6 +33,7 @@ Progress: [██████░░░░] 55%
 | 04-ingestion-engine-deduplication-pipeline | 3 | 15 min | 5 min |
 | 05-search-discovery-backend-api | 3 | 15 min | 5 min |
 | 06-media-detail-credits-episode-hierarchy-api | 3 | 15 min | 5 min |
+| 07-user-authentication-security | 3 | 15 min | 5 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 min, 5 min, 5 min, 5 min, 5 min

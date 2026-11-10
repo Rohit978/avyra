@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     PROJECT_NAME: str = "Cineverse"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = "supersecretchangeinproduction"
+    SECRET_KEY: str = "supersecretchangeinproduction_cineverse_secure_jwt_key_2026_x7k9"
     
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/cineverse"
