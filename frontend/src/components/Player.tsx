@@ -91,14 +91,13 @@ export default function Player({ playback }: PlayerProps) {
         </div>
       )}
 
-      {/* Sandboxed Video Embed */}
+      {/* Video Embed */}
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-neutral-800 shadow-2xl">
         <iframe
           src={activeSource.embed_url}
           title={`${playback.title} Player`}
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-          sandbox={playback.sandbox_policy}
-          referrerPolicy={playback.referrer_policy as React.HTMLAttributeReferrerPolicy}
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
+          referrerPolicy="origin"
           className="absolute inset-0 w-full h-full border-0"
           allowFullScreen
         />
