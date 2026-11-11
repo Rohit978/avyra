@@ -120,7 +120,7 @@ export default function Navbar() {
 
             {/* Suggestions Popover */}
             {isOpen && suggestions.length > 0 && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-surface-elevated border border-surface-border rounded-xl shadow-2xl overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-surface-elevated border border-surface-border rounded-xl shadow-2xl overflow-hidden z-50">
                 <div className="p-2 border-b border-surface-border text-xs font-semibold uppercase tracking-wider text-gray-400">
                   Quick Suggestions
                 </div>
