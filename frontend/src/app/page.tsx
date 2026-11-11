@@ -11,7 +11,7 @@ export default async function HomePage() {
     getCuratedCollection("upcoming"),
   ]);
 
-  const heroItem = trending[0] || popularMovies[0];
+  const heroItem = popularMovies[0] || trending[0];
 
   return (
     <div className="flex flex-col w-full pb-16">
