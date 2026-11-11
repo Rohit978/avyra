@@ -25,8 +25,8 @@ export default function MediaDetailClient({
 
   const isEpisodic = media.media_type === "TV_SHOW" || media.media_type === "ANIME";
 
-  // Provide fallback season & episodes if a web series has empty seasons array
-  const effectiveSeasons: SeasonDetail[] =
+  // Provide fallback season & episodes if a web series has empty seasons array or empty season.episodes
+  const rawSeasons: SeasonDetail[] =
     seasons.length > 0
       ? seasons
       : isEpisodic
@@ -39,23 +39,38 @@ export default function MediaDetailClient({
             poster_path: null,
             air_date: null,
             episode_count: media.episode_count || 12,
-            episodes: Array.from(
-              { length: Math.max(media.episode_count || 12, 1) },
-              (_, i) => ({
-                id: `ep-${i + 1}`,
-                season_id: "fallback-s1",
-                media_id: media.id,
-                episode_number: i + 1,
-                title: `Episode ${i + 1}`,
-                overview: null,
-                still_path: null,
-                air_date: null,
-                runtime: null,
-              })
-            ),
+            episodes: [],
           },
         ]
       : [];
+
+  const effectiveSeasons: SeasonDetail[] = rawSeasons.map((s) => {
+    const epCount = Math.max(
+      s.episodes?.length || 0,
+      s.episode_count || 0,
+      media.episode_count || 0,
+      12
+    );
+    const resolvedEpisodes =
+      s.episodes && s.episodes.length > 0
+        ? s.episodes
+        : Array.from({ length: epCount }, (_, i) => ({
+            id: `ep-${s.season_number}-${i + 1}`,
+            season_id: s.id || `s-${s.season_number}`,
+            media_id: media.id,
+            episode_number: i + 1,
+            title: `Episode ${i + 1}`,
+            overview: null,
+            still_path: null,
+            air_date: null,
+            runtime: null,
+          }));
+    return {
+      ...s,
+      episode_count: Math.max(s.episode_count || 0, resolvedEpisodes.length),
+      episodes: resolvedEpisodes,
+    };
+  });
 
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState<number>(
     initialPlayback.season_number || effectiveSeasons[0]?.season_number || 1
@@ -69,7 +84,13 @@ export default function MediaDetailClient({
   const currentSeason =
     effectiveSeasons.find((s) => s.season_number === selectedSeasonNumber) ||
     effectiveSeasons[0];
+
   const currentEpisodes = currentSeason?.episodes || [];
+
+  const validEpisodeNumber = Math.min(
+    Math.max(selectedEpisodeNumber, 1),
+    Math.max(currentEpisodes.length, 1)
+  );
 
   const updatePlaybackEpisode = (sNum: number, epNum: number) => {
     setSelectedSeasonNumber(sNum);
@@ -365,12 +386,12 @@ export default function MediaDetailClient({
                     </label>
                     <select
                       id="watch-episode-select"
-                      value={selectedEpisodeNumber}
+                      value={validEpisodeNumber}
                       onChange={(e) => {
                         const newEpNum = parseInt(e.target.value, 10);
                         updatePlaybackEpisode(selectedSeasonNumber, newEpNum);
                       }}
-                      className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer max-w-[220px] sm:max-w-[280px] truncate"
+                      className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer min-w-[150px] max-w-[280px] truncate"
                     >
                       {currentEpisodes.map((ep) => (
                         <option key={ep.episode_number} value={ep.episode_number}>
@@ -438,12 +459,12 @@ export default function MediaDetailClient({
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-neutral-400 uppercase">Jump to Episode:</span>
                   <select
-                    value={selectedEpisodeNumber}
+                    value={validEpisodeNumber}
                     onChange={(e) => {
                       const newEpNum = parseInt(e.target.value, 10);
                       updatePlaybackEpisode(selectedSeasonNumber, newEpNum);
                     }}
-                    className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer max-w-[240px] truncate"
+                    className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer min-w-[150px] max-w-[280px] truncate"
                   >
                     {currentEpisodes.map((ep) => (
                       <option key={ep.episode_number} value={ep.episode_number}>

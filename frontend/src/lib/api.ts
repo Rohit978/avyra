@@ -298,37 +298,37 @@ export async function getMediaCredits(id: string): Promise<MediaCredits> {
 }
 
 export async function getMediaSeasons(id: string): Promise<SeasonDetail[]> {
-  return safeFetch<SeasonDetail[]>(`${API_BASE_URL}/media/${id}/seasons`, [
-    {
-      id: "s-1",
-      season_number: 1,
-      title: "Season 1",
-      overview: "First season overview.",
-      episode_count: 9,
-      episodes: [
-        {
-          id: "ep-1",
-          season_id: "s-1",
-          media_id: id,
-          episode_number: 1,
-          title: "Welcome to the Playground",
-          overview: "Two sisters attempt to rob a lab in the topside city.",
-          runtime: 42,
-          air_date: "2021-11-06",
-        },
-        {
-          id: "ep-2",
-          season_id: "s-1",
-          media_id: id,
-          episode_number: 2,
-          title: "Some Mysteries Are Better Left Unsolved",
-          overview: "Jayce faces punishment for illicit experiments.",
-          runtime: 40,
-          air_date: "2021-11-06",
-        },
-      ],
-    },
-  ]);
+  const summaries = await safeFetch<SeasonDetail[]>(
+    `${API_BASE_URL}/media/${id}/seasons`,
+    []
+  );
+
+  if (!summaries || summaries.length === 0) {
+    return [];
+  }
+
+  // Enrich each season with its detailed episodes array
+  try {
+    const detailed = await Promise.all(
+      summaries.map(async (s) => {
+        try {
+          const detail = await safeFetch<SeasonDetail>(
+            `${API_BASE_URL}/media/${id}/seasons/${s.season_number}`,
+            s
+          );
+          if (detail && detail.episodes && detail.episodes.length > 0) {
+            return detail;
+          }
+          return s;
+        } catch {
+          return s;
+        }
+      })
+    );
+    return detailed;
+  } catch {
+    return summaries;
+  }
 }
 
 export async function getPlaybackOptions(
