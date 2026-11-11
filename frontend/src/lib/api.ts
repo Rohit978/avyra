@@ -1,6 +1,10 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" ? "/api/v1" : "http://127.0.0.1:8000/api/v1");
+  (typeof window !== "undefined"
+    ? "/api/v1"
+    : process.env.NODE_ENV === "development"
+    ? "http://127.0.0.1:8000/api/v1"
+    : "");
 
 export interface MediaSummary {
   id: string;
@@ -162,6 +166,13 @@ const MOCK_ITEMS: MediaSummary[] = [
 ];
 
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
+  if (
+    !url ||
+    (typeof window === "undefined" && !url.startsWith("http://") && !url.startsWith("https://")) ||
+    (url.startsWith("http://127.0.0.1") && process.env.NODE_ENV === "production")
+  ) {
+    return fallback;
+  }
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return fallback;
