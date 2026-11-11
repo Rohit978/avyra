@@ -32,23 +32,30 @@ export default function MediaDetailClient({
   const selectedSeason = seasons.find((s) => s.season_number === selectedSeasonNumber) || seasons[0];
 
   const handleSelectEpisode = (epNum: number) => {
-    // Switch to episode playback
+    // Switch to episode playback with verified TMDB ID
+    const tmdbId =
+      currentPlayback.tmdb_id ||
+      media.provenance.find((p) => p.provider === "tmdb")?.external_id ||
+      "157336";
+
     setCurrentPlayback({
       ...currentPlayback,
+      has_stream: true,
+      reason: null,
       season_number: selectedSeasonNumber,
       episode_number: epNum,
       embed_sources: [
         {
           id: "vidbolt-tv",
           name: "Vidbolt",
-          embed_url: `https://vidbolt.xyz/tv/${media.provenance[0]?.external_id || "550"}/${selectedSeasonNumber}/${epNum}`,
+          embed_url: `https://vidbolt.xyz/tv/${tmdbId}/${selectedSeasonNumber}/${epNum}`,
           domain: "vidbolt.xyz",
           is_primary: true,
         },
         {
           id: "reelsdownload",
           name: "ReelsDownload",
-          embed_url: `https://embed.reelsdownload.online/player/${media.provenance[0]?.external_id || "550"}?key=k_5661ac637169a1733857dc50`,
+          embed_url: `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50`,
           domain: "embed.reelsdownload.online",
           is_primary: false,
         },

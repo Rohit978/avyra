@@ -574,27 +574,54 @@ async def map_anime_tmdb_ids():
         "The Apothecary Diaries": "220645",
         "Jujutsu Kaisen": "95479",
         "Attack on Titan": "1429",
+        "Naruto": "31910",
+        "Shippuden": "31910",
+        "JoJo": "46116",
+        "Steel Ball Run": "46116",
+        "Overgeared": "280208",
+        "Chitose": "265636",
+        "Sato-san": "209502",
+        "Student Council": "191656",
+        "Cheat-Granting": "249821",
+        "Nia Liston": "270830",
+        "Love Potion": "268593",
+        "Demon Slayer": "85937",
+        "Solo Leveling": "127532",
+        "Chainsaw Man": "114410",
+        "Death Note": "13916",
+        "Fullmetal Alchemist": "31911",
+        "Hunter x Hunter": "46298",
+        "Frieren": "209867",
     }
     async with AsyncSessionLocal() as session:
+        mapped_media_ids = set()
         for title, tmdb_id in anime_tmdb_map.items():
             stmt = select(Media).where(Media.title.ilike(f"%{title}%"))
             res = await session.execute(stmt)
-            media = res.scalars().first()
-            if media:
-                # Check if TMDB external id already exists
+            medias = res.scalars().all()
+            for media in medias:
+                if media.id in mapped_media_ids:
+                    continue
+                # Check if TMDB external id already exists for this media or in provider table
                 check_stmt = select(ExternalID).where(
-                    ExternalID.media_id == media.id,
-                    ExternalID.provider == "tmdb",
+                    (ExternalID.media_id == media.id) & (ExternalID.provider == "tmdb")
                 )
                 c_res = await session.execute(check_stmt)
                 if not c_res.scalar_one_or_none():
-                    ext = ExternalID(
-                        media_id=media.id,
-                        provider="tmdb",
-                        external_id=tmdb_id,
+                    # Also check if this tmdb_id is already assigned to another media
+                    dup_stmt = select(ExternalID).where(
+                        (ExternalID.provider == "tmdb") & (ExternalID.external_id == tmdb_id)
                     )
-                    session.add(ext)
-                    print(f"   + Mapped {media.title} to TMDB ID {tmdb_id}")
+                    d_res = await session.execute(dup_stmt)
+                    if not d_res.scalar_one_or_none():
+                        ext = ExternalID(
+                            media_id=media.id,
+                            provider="tmdb",
+                            external_id=tmdb_id,
+                        )
+                        session.add(ext)
+                        mapped_media_ids.add(media.id)
+                        print(f"   + Mapped {media.title} to TMDB ID {tmdb_id}")
         await session.commit()
     print("✓ Anime TMDB provider mappings completed.")
 

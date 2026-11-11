@@ -12,6 +12,50 @@ from backend.app.models.media import Media
 from backend.app.schemas.playback import EmbedSourceDTO, PlaybackOptionsResponseDTO
 
 
+ANIME_TMDB_MAP = {
+    "naruto": "31910",
+    "shippuden": "31910",
+    "one piece": "37854",
+    "bleach": "30984",
+    "jujutsu kaisen": "95479",
+    "demon slayer": "85937",
+    "kimetsu no yaiba": "85937",
+    "attack on titan": "1429",
+    "shingeki no kyojin": "1429",
+    "solo leveling": "127532",
+    "chainsaw man": "114410",
+    "death note": "13916",
+    "fullmetal alchemist": "31911",
+    "hunter x hunter": "46298",
+    "my hero academia": "65930",
+    "one punch man": "63926",
+    "cyberpunk": "105248",
+    "black clover": "73223",
+    "apothecary diaries": "220645",
+    "jojo": "46116",
+    "steel ball run": "46116",
+    "frieren": "209867",
+    "spy x family": "120089",
+    "tokyo ghoul": "61374",
+    "sword art online": "45782",
+    "overlord": "64196",
+    "mob psycho": "67070",
+    "vinland saga": "83236",
+    "dragon ball": "12971",
+    "haikyu": "60863",
+    "blue lock": "135251",
+    "kaiju": "207468",
+    "dandadan": "237478",
+    "overgeared": "280208",
+    "chitose": "265636",
+    "sato-san": "209502",
+    "student council": "191656",
+    "laid-off cheat": "249821",
+    "nia liston": "270830",
+    "love potion": "268593",
+}
+
+
 class PlaybackService:
     @staticmethod
     def _is_domain_allowed(url: str) -> bool:
@@ -53,8 +97,20 @@ class PlaybackService:
                     tmdb_eid = eid
                     break
 
+        # Dynamic fallback matching for anime / missing TMDB IDs
+        tmdb_id: Optional[str] = None
+        if tmdb_eid and tmdb_eid.external_id:
+            tmdb_id = str(tmdb_eid.external_id).strip()
+        else:
+            title_lower = (media.title or "").lower()
+            orig_lower = (media.original_title or "").lower()
+            for key, val in ANIME_TMDB_MAP.items():
+                if key in title_lower or key in orig_lower:
+                    tmdb_id = val
+                    break
+
         # Fallback if no TMDB ID is linked
-        if not tmdb_eid or not tmdb_eid.external_id:
+        if not tmdb_id:
             return PlaybackOptionsResponseDTO(
                 media_id=media.id,
                 media_type=media.media_type,
@@ -64,18 +120,19 @@ class PlaybackService:
                 embed_sources=[],
             )
 
-        tmdb_id = str(tmdb_eid.external_id).strip()
         embed_sources: List[EmbedSourceDTO] = []
-
         is_episodic = media.media_type in (MediaType.TV_SHOW, MediaType.ANIME)
-        has_ep_params = season_number is not None and episode_number is not None
 
-        if is_episodic and has_ep_params:
+        if is_episodic:
+            # Episodic content (TV Shows & Anime): Default to Season 1, Episode 1 if not specified
+            s_num = season_number if season_number is not None else 1
+            e_num = episode_number if episode_number is not None else 1
+
             # 1. Vidbolt TV template: https://vidbolt.xyz/tv/{id}/{s}/{e}
             vidbolt_tv_url = settings.VIDBOLT_TV_URL_TEMPLATE.format(
                 id=tmdb_id,
-                s=season_number,
-                e=episode_number,
+                s=s_num,
+                e=e_num,
             )
             if cls._is_domain_allowed(vidbolt_tv_url):
                 embed_sources.append(
