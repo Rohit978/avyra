@@ -113,6 +113,33 @@ class IngestionPipeline:
             self.session.add(ext_id)
             is_created = True
 
+        # 1.5 Sync secondary external IDs from raw_metadata
+        if dto.raw_metadata:
+            added_ext_keys = {(dto.provider, str(dto.external_id).strip())}
+            prov_mappings = [
+                ("tmdb", dto.raw_metadata.get("moviedb_id") or dto.raw_metadata.get("tmdb_id")),
+                ("imdb", dto.raw_metadata.get("imdb_id")),
+                ("anilist", dto.raw_metadata.get("anilist_id")),
+            ]
+            for prov, val in prov_mappings:
+                if val:
+                    val_str = str(val).strip()
+                    if (prov, val_str) in added_ext_keys:
+                        continue
+                    chk_stmt = select(ExternalID).where(
+                        (ExternalID.provider == prov) & (ExternalID.external_id == val_str)
+                    )
+                    chk_res = await self.session.execute(chk_stmt)
+                    if not chk_res.scalars().first():
+                        self.session.add(
+                            ExternalID(
+                                media_id=media.id,
+                                provider=prov,
+                                external_id=val_str,
+                            )
+                        )
+                        added_ext_keys.add((prov, val_str))
+
         # 2. Sync Titles
         existing_titles_stmt = select(MediaTitle.title).where(MediaTitle.media_id == media.id)
         existing_titles_res = await self.session.execute(existing_titles_stmt)
@@ -168,7 +195,11 @@ class IngestionPipeline:
                 season.episode_count = max(season.episode_count, s.episode_count)
 
             # Sync episodes if present
+            seen_ep_numbers = set()
             for ep in s.episodes:
+                if ep.episode_number in seen_ep_numbers:
+                    continue
+                seen_ep_numbers.add(ep.episode_number)
                 ep_stmt = select(Episode).where(
                     Episode.season_id == season.id,
                     Episode.episode_number == ep.episode_number,
