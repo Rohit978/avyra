@@ -138,7 +138,7 @@ class PlaybackService:
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="vidbolt-tv",
-                        name="Vidbolt",
+                        name="Server 1",
                         embed_url=vidbolt_tv_url,
                         domain="vidbolt.xyz",
                         is_primary=True,
@@ -151,7 +151,7 @@ class PlaybackService:
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="reelsdownload",
-                        name="ReelsDownload",
+                        name="Server 2",
                         embed_url=reels_url,
                         domain="embed.reelsdownload.online",
                         is_primary=len(embed_sources) == 0,
@@ -165,7 +165,7 @@ class PlaybackService:
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="vidbolt-movie",
-                        name="Vidbolt",
+                        name="Server 1",
                         embed_url=vidbolt_movie_url,
                         domain="vidbolt.xyz",
                         is_primary=True,
@@ -178,7 +178,7 @@ class PlaybackService:
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="reelsdownload",
-                        name="ReelsDownload",
+                        name="Server 2",
                         embed_url=reels_url,
                         domain="embed.reelsdownload.online",
                         is_primary=len(embed_sources) == 0,

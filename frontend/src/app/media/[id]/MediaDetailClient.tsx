@@ -22,17 +22,59 @@ export default function MediaDetailClient({
   const [activeTab, setActiveTab] = useState<"overview" | "cast" | "episodes" | "watch">(
     autoPlay ? "watch" : "overview"
   );
+
+  const isEpisodic = media.media_type === "TV_SHOW" || media.media_type === "ANIME";
+
+  // Provide fallback season & episodes if a web series has empty seasons array
+  const effectiveSeasons: SeasonDetail[] =
+    seasons.length > 0
+      ? seasons
+      : isEpisodic
+      ? [
+          {
+            id: "fallback-s1",
+            season_number: 1,
+            title: "Season 1",
+            overview: null,
+            poster_path: null,
+            air_date: null,
+            episode_count: media.episode_count || 12,
+            episodes: Array.from(
+              { length: Math.max(media.episode_count || 12, 1) },
+              (_, i) => ({
+                id: `ep-${i + 1}`,
+                season_id: "fallback-s1",
+                media_id: media.id,
+                episode_number: i + 1,
+                title: `Episode ${i + 1}`,
+                overview: null,
+                still_path: null,
+                air_date: null,
+                runtime: null,
+              })
+            ),
+          },
+        ]
+      : [];
+
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState<number>(
-    seasons[0]?.season_number || 1
+    initialPlayback.season_number || effectiveSeasons[0]?.season_number || 1
+  );
+  const [selectedEpisodeNumber, setSelectedEpisodeNumber] = useState<number>(
+    initialPlayback.episode_number || 1
   );
   const [currentPlayback, setCurrentPlayback] = useState<PlaybackOptions>(initialPlayback);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
 
-  const isEpisodic = media.media_type === "TV_SHOW" || media.media_type === "ANIME";
-  const selectedSeason = seasons.find((s) => s.season_number === selectedSeasonNumber) || seasons[0];
+  const currentSeason =
+    effectiveSeasons.find((s) => s.season_number === selectedSeasonNumber) ||
+    effectiveSeasons[0];
+  const currentEpisodes = currentSeason?.episodes || [];
 
-  const handleSelectEpisode = (epNum: number) => {
-    // Switch to episode playback with verified TMDB ID
+  const updatePlaybackEpisode = (sNum: number, epNum: number) => {
+    setSelectedSeasonNumber(sNum);
+    setSelectedEpisodeNumber(epNum);
+
     const tmdbId =
       currentPlayback.tmdb_id ||
       media.provenance.find((p) => p.provider === "tmdb")?.external_id ||
@@ -42,19 +84,19 @@ export default function MediaDetailClient({
       ...currentPlayback,
       has_stream: true,
       reason: null,
-      season_number: selectedSeasonNumber,
+      season_number: sNum,
       episode_number: epNum,
       embed_sources: [
         {
           id: "vidbolt-tv",
-          name: "Vidbolt",
-          embed_url: `https://vidbolt.xyz/tv/${tmdbId}/${selectedSeasonNumber}/${epNum}`,
+          name: "Server 1",
+          embed_url: `https://vidbolt.xyz/tv/${tmdbId}/${sNum}/${epNum}`,
           domain: "vidbolt.xyz",
           is_primary: true,
         },
         {
           id: "reelsdownload",
-          name: "ReelsDownload",
+          name: "Server 2",
           embed_url: `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50`,
           domain: "embed.reelsdownload.online",
           is_primary: false,
@@ -62,6 +104,26 @@ export default function MediaDetailClient({
       ],
     });
     setActiveTab("watch");
+  };
+
+  const handlePrevEpisode = () => {
+    if (selectedEpisodeNumber > 1) {
+      updatePlaybackEpisode(selectedSeasonNumber, selectedEpisodeNumber - 1);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    const maxEp = currentEpisodes.length || 24;
+    if (selectedEpisodeNumber < maxEp) {
+      updatePlaybackEpisode(selectedSeasonNumber, selectedEpisodeNumber + 1);
+    } else {
+      const nextSeason = effectiveSeasons.find(
+        (s) => s.season_number === selectedSeasonNumber + 1
+      );
+      if (nextSeason) {
+        updatePlaybackEpisode(selectedSeasonNumber + 1, 1);
+      }
+    }
   };
 
   return (
@@ -263,7 +325,88 @@ export default function MediaDetailClient({
 
         {/* Tab 2: Player */}
         {activeTab === "watch" && (
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-4">
+            {/* Episodic Dropdown Controls for Webseries & Anime */}
+            {isEpisodic && (
+              <div className="bg-surface-elevated/90 backdrop-blur border border-surface-border rounded-xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Season Dropdown */}
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor="watch-season-select"
+                      className="text-xs uppercase font-bold text-neutral-400"
+                    >
+                      Season:
+                    </label>
+                    <select
+                      id="watch-season-select"
+                      value={selectedSeasonNumber}
+                      onChange={(e) => {
+                        const newSeasonNum = parseInt(e.target.value, 10);
+                        updatePlaybackEpisode(newSeasonNum, 1);
+                      }}
+                      className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
+                    >
+                      {effectiveSeasons.map((s) => (
+                        <option key={s.season_number} value={s.season_number}>
+                          Season {s.season_number} ({s.episode_count || s.episodes.length} eps)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Episode Dropdown */}
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor="watch-episode-select"
+                      className="text-xs uppercase font-bold text-neutral-400"
+                    >
+                      Episode:
+                    </label>
+                    <select
+                      id="watch-episode-select"
+                      value={selectedEpisodeNumber}
+                      onChange={(e) => {
+                        const newEpNum = parseInt(e.target.value, 10);
+                        updatePlaybackEpisode(selectedSeasonNumber, newEpNum);
+                      }}
+                      className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer max-w-[220px] sm:max-w-[280px] truncate"
+                    >
+                      {currentEpisodes.map((ep) => (
+                        <option key={ep.episode_number} value={ep.episode_number}>
+                          Ep {ep.episode_number}{ep.title ? `: ${ep.title}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Quick Prev / Next Episode Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePrevEpisode}
+                    disabled={selectedEpisodeNumber <= 1}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 disabled:opacity-35 disabled:hover:bg-neutral-800 text-white transition-colors flex items-center gap-1 border border-neutral-700 cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                    </svg>
+                    Prev
+                  </button>
+
+                  <button
+                    onClick={handleNextEpisode}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary hover:bg-primary-hover text-white transition-all shadow-md shadow-primary/25 flex items-center gap-1 cursor-pointer"
+                  >
+                    Next
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <Player playback={currentPlayback} />
           </div>
         )}
@@ -271,38 +414,86 @@ export default function MediaDetailClient({
         {/* Tab 3: Episodes */}
         {activeTab === "episodes" && isEpisodic && (
           <div className="space-y-6">
-            {/* Season Selector */}
-            {seasons.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-neutral-400 uppercase">Season:</span>
-                <select
-                  value={selectedSeasonNumber}
-                  onChange={(e) => setSelectedSeasonNumber(parseInt(e.target.value, 10))}
-                  className="bg-surface-elevated text-sm text-white border border-surface-border rounded-lg px-3 py-1.5 focus:outline-none"
-                >
-                  {seasons.map((s) => (
-                    <option key={s.season_number} value={s.season_number}>
-                      Season {s.season_number} ({s.episode_count} eps)
-                    </option>
-                  ))}
-                </select>
+            {/* Season Selector & Episode Dropdown Bar */}
+            <div className="bg-surface-elevated/70 border border-surface-border rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neutral-400 uppercase">Season:</span>
+                  <select
+                    value={selectedSeasonNumber}
+                    onChange={(e) => {
+                      const newSeasonNum = parseInt(e.target.value, 10);
+                      updatePlaybackEpisode(newSeasonNum, 1);
+                    }}
+                    className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
+                  >
+                    {effectiveSeasons.map((s) => (
+                      <option key={s.season_number} value={s.season_number}>
+                        Season {s.season_number} ({s.episode_count || s.episodes.length} eps)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neutral-400 uppercase">Jump to Episode:</span>
+                  <select
+                    value={selectedEpisodeNumber}
+                    onChange={(e) => {
+                      const newEpNum = parseInt(e.target.value, 10);
+                      updatePlaybackEpisode(selectedSeasonNumber, newEpNum);
+                    }}
+                    className="bg-neutral-900 text-sm font-semibold text-white border border-neutral-700 hover:border-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer max-w-[240px] truncate"
+                  >
+                    {currentEpisodes.map((ep) => (
+                      <option key={ep.episode_number} value={ep.episode_number}>
+                        Ep {ep.episode_number}{ep.title ? `: ${ep.title}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            )}
+
+              <button
+                onClick={() => setActiveTab("watch")}
+                className="bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md shadow-primary/20 flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Resume Episode {selectedEpisodeNumber}
+              </button>
+            </div>
 
             {/* Episode List */}
             <div className="space-y-3">
-              {selectedSeason?.episodes.map((ep) => (
+              {currentEpisodes.map((ep) => (
                 <div
                   key={ep.id}
-                  className="bg-surface-elevated border border-surface-border rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-neutral-700 transition-colors"
+                  className={`border rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors ${
+                    ep.episode_number === selectedEpisodeNumber
+                      ? "bg-primary/10 border-primary/40"
+                      : "bg-surface-elevated border-surface-border hover:border-neutral-700"
+                  }`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-xl font-bold text-neutral-500 w-8 text-center">
+                    <span
+                      className={`text-xl font-black w-8 text-center ${
+                        ep.episode_number === selectedEpisodeNumber
+                          ? "text-primary"
+                          : "text-neutral-500"
+                      }`}
+                    >
                       {ep.episode_number}
                     </span>
                     <div>
-                      <h4 className="text-sm font-semibold text-white">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                         {ep.title || `Episode ${ep.episode_number}`}
+                        {ep.episode_number === selectedEpisodeNumber && (
+                          <span className="text-[10px] bg-primary text-white font-bold px-1.5 py-0.5 rounded">
+                            Playing
+                          </span>
+                        )}
                       </h4>
                       {ep.overview && (
                         <p className="text-xs text-neutral-400 line-clamp-1 max-w-xl mt-0.5">
@@ -313,8 +504,8 @@ export default function MediaDetailClient({
                   </div>
 
                   <button
-                    onClick={() => handleSelectEpisode(ep.episode_number)}
-                    className="bg-primary/90 hover:bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-end sm:self-auto"
+                    onClick={() => updatePlaybackEpisode(selectedSeasonNumber, ep.episode_number)}
+                    className="bg-primary/90 hover:bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-end sm:self-auto cursor-pointer"
                   >
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />

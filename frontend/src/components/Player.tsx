@@ -74,19 +74,30 @@ export default function Player({ playback }: PlayerProps) {
             Stream Server:
           </span>
           <div className="flex items-center gap-2">
-            {playback.embed_sources.map((source) => (
-              <button
-                key={source.id}
-                onClick={() => setActiveSourceId(source.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                  activeSource.id === source.id
-                    ? "bg-amber-500 text-black font-semibold shadow-md shadow-amber-500/20"
-                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                }`}
-              >
-                {source.name}
-              </button>
-            ))}
+            {playback.embed_sources.map((source, idx) => {
+              const label =
+                source.name === "Server 1" || source.name === "Server 2"
+                  ? source.name
+                  : `Server ${idx + 1}`;
+              return (
+                <button
+                  key={source.id}
+                  onClick={() => setActiveSourceId(source.id)}
+                  className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all flex items-center gap-1.5 ${
+                    activeSource.id === source.id
+                      ? "bg-primary text-white shadow-md shadow-primary/30"
+                      : "bg-surface-elevated text-neutral-300 hover:bg-neutral-800 border border-surface-border"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      activeSource.id === source.id ? "bg-white" : "bg-neutral-500"
+                    }`}
+                  />
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
