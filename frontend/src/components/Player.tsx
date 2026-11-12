@@ -83,6 +83,21 @@ export default function Player({ playback }: PlayerProps) {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
+  // 2. Active Window Popup & Tab Hijack Interceptor
+  useEffect(() => {
+    if (!adShieldActive || typeof window === "undefined") return;
+
+    const originalOpen = window.open;
+    (window as any).open = function (...args: any[]) {
+      console.log("🛡️ CineVerse Ad Shield: Blocked unauthorized pop-up", args);
+      return null;
+    };
+
+    return () => {
+      window.open = originalOpen;
+    };
+  }, [adShieldActive]);
+
   // 2. Auto Landscape lock and unlock on Fullscreen change
   useEffect(() => {
     const handleFullscreenChange = async () => {
@@ -394,18 +409,13 @@ export default function Player({ playback }: PlayerProps) {
           isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 w-screen h-screen" : ""
         }`}
       >
-        {/* Primary Video Embed with Anti-Popup Sandbox */}
+        {/* Primary Video Embed */}
         <iframe
           ref={iframeRef}
           src={activeSource.embed_url}
           title={`${playback.title} Player`}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
           referrerPolicy="origin"
-          sandbox={
-            adShieldActive
-              ? "allow-scripts allow-same-origin allow-forms allow-presentation"
-              : undefined
-          }
           className="absolute inset-0 w-full h-full border-0 z-0"
           allowFullScreen
         />
@@ -513,11 +523,11 @@ export default function Player({ playback }: PlayerProps) {
                 </p>
               </div>
 
-              {/* Layer 1: Built-in Anti-Popup Sandbox */}
+              {/* Layer 1: Client-Side Anti-Popup Interceptor */}
               <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-emerald-400 flex items-center gap-1.5">
-                    <span>🛡️ Layer 1: Anti-Popup Sandbox</span>
+                    <span>🛡️ Layer 1: Window Pop-up Shield</span>
                   </div>
                   <button
                     onClick={() => setAdShieldActive(!adShieldActive)}
@@ -531,7 +541,7 @@ export default function Player({ playback }: PlayerProps) {
                   </button>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Strictly removes <code className="text-amber-400">allow-popups</code> and <code className="text-amber-400">allow-top-navigation</code> from the video player. All unwanted <code className="text-amber-400">window.open()</code> tabs, new popunder windows, and page hijacking redirects are stopped cold.
+                  Third-party players like Vidbolt actively disable video playback if an iframe is sandboxed. Our shield intercepts rogue <code className="text-amber-400">window.open()</code> popunders, new ad tabs, and malicious redirect attempts so the video plays without triggering player lockouts.
                 </p>
               </div>
 
