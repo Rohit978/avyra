@@ -213,7 +213,59 @@ class PlaybackService:
             s_num = season_number if season_number is not None else 1
             e_num = episode_number if episode_number is not None else 1
 
-            # 1. Vidbolt TV template: https://vidbolt.xyz/tv/{id}/{s}/{e}
+            # 1. VidSrc Primary TV: https://vidsrc.me/embed/tv?tmdb={id}&season={s}&episode={e}
+            vidsrc_tv_url = settings.VIDSRC_TV_URL_TEMPLATE.format(id=tmdb_id, s=s_num, e=e_num)
+            if cls._is_domain_allowed(vidsrc_tv_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="vidsrc-primary",
+                        name="Server 1 (Fast & Clean)",
+                        embed_url=vidsrc_tv_url,
+                        domain="vidsrc.me",
+                        is_primary=True,
+                    )
+                )
+
+            # 2. 2Embed TV: https://www.2embed.cc/embedtv/{id}&s={s}&e={e}
+            twoembed_tv_url = settings.TWOEMBED_TV_URL_TEMPLATE.format(id=tmdb_id, s=s_num, e=e_num)
+            if cls._is_domain_allowed(twoembed_tv_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="2embed",
+                        name="Server 2 (2Embed HD)",
+                        embed_url=twoembed_tv_url,
+                        domain="2embed.cc",
+                        is_primary=False,
+                    )
+                )
+
+            # 3. Vidflix TV: https://vidsrc.pm/embed/tv?tmdb={id}&season={s}&episode={e}
+            vidflix_tv_url = settings.VIDFLIX_TV_URL_TEMPLATE.format(id=tmdb_id, s=s_num, e=e_num)
+            if cls._is_domain_allowed(vidflix_tv_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="vidflix",
+                        name="Server 3 (Vidflix)",
+                        embed_url=vidflix_tv_url,
+                        domain="vidsrc.pm",
+                        is_primary=False,
+                    )
+                )
+
+            # 4. Reelsdownload fallback player template
+            reels_url = f"https://embed.reelsdownload.online/player/{tmdb_id}?key=k_5661ac637169a1733857dc50&s={s_num}&e={e_num}"
+            if cls._is_domain_allowed(reels_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="reelsdownload",
+                        name="Server 4 (Reels)",
+                        embed_url=reels_url,
+                        domain="embed.reelsdownload.online",
+                        is_primary=False,
+                    )
+                )
+
+            # 5. Vidbolt TV template: https://vidbolt.xyz/tv/{id}/{s}/{e}
             vidbolt_tv_url = settings.VIDBOLT_TV_URL_TEMPLATE.format(
                 id=tmdb_id,
                 s=s_num,
@@ -223,50 +275,76 @@ class PlaybackService:
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="vidbolt-tv",
-                        name="Server 1",
+                        name="Server 5 (Vidbolt)",
                         embed_url=vidbolt_tv_url,
                         domain="vidbolt.xyz",
+                        is_primary=False,
+                    )
+                )
+        else:
+            # Movie or default title stream
+            # 1. VidSrc Primary Movie: https://vidsrc.me/embed/movie?tmdb={TMDB_ID}
+            vidsrc_movie_url = settings.VIDSRC_MOVIE_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
+            if cls._is_domain_allowed(vidsrc_movie_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="vidsrc-primary",
+                        name="Server 1 (Fast & Clean)",
+                        embed_url=vidsrc_movie_url,
+                        domain="vidsrc.me",
                         is_primary=True,
                     )
                 )
 
-            # 2. Reelsdownload fallback player template
+            # 2. 2Embed Movie: https://www.2embed.cc/embed/{TMDB_ID}
+            twoembed_movie_url = settings.TWOEMBED_MOVIE_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
+            if cls._is_domain_allowed(twoembed_movie_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="2embed",
+                        name="Server 2 (2Embed HD)",
+                        embed_url=twoembed_movie_url,
+                        domain="2embed.cc",
+                        is_primary=False,
+                    )
+                )
+
+            # 3. Vidflix Movie: https://vidsrc.pm/embed/movie?tmdb={TMDB_ID}
+            vidflix_movie_url = settings.VIDFLIX_MOVIE_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
+            if cls._is_domain_allowed(vidflix_movie_url):
+                embed_sources.append(
+                    EmbedSourceDTO(
+                        id="vidflix",
+                        name="Server 3 (Vidflix)",
+                        embed_url=vidflix_movie_url,
+                        domain="vidsrc.pm",
+                        is_primary=False,
+                    )
+                )
+
+            # 4. ReelsDownload: https://embed.reelsdownload.online/player/{TMDB_ID}?key=k_5661ac637169a1733857dc50
             reels_url = settings.REELSDOWNLOAD_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
             if cls._is_domain_allowed(reels_url):
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="reelsdownload",
-                        name="Server 2",
+                        name="Server 4 (Reels)",
                         embed_url=reels_url,
                         domain="embed.reelsdownload.online",
-                        is_primary=len(embed_sources) == 0,
+                        is_primary=False,
                     )
                 )
-        else:
-            # Movie or default title stream
-            # 1. Vidbolt Movie: https://vidbolt.xyz/movie/{TMDB_ID}
+
+            # 5. Vidbolt Movie: https://vidbolt.xyz/movie/{TMDB_ID}
             vidbolt_movie_url = settings.VIDBOLT_MOVIE_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
             if cls._is_domain_allowed(vidbolt_movie_url):
                 embed_sources.append(
                     EmbedSourceDTO(
                         id="vidbolt-movie",
-                        name="Server 1",
+                        name="Server 5 (Vidbolt)",
                         embed_url=vidbolt_movie_url,
                         domain="vidbolt.xyz",
-                        is_primary=True,
-                    )
-                )
-
-            # 2. ReelsDownload: https://embed.reelsdownload.online/player/{TMDB_ID}?key=k_5661ac637169a1733857dc50
-            reels_url = settings.REELSDOWNLOAD_URL_TEMPLATE.format(TMDB_ID=tmdb_id)
-            if cls._is_domain_allowed(reels_url):
-                embed_sources.append(
-                    EmbedSourceDTO(
-                        id="reelsdownload",
-                        name="Server 2",
-                        embed_url=reels_url,
-                        domain="embed.reelsdownload.online",
-                        is_primary=len(embed_sources) == 0,
+                        is_primary=False,
                     )
                 )
 

@@ -28,7 +28,7 @@ export default function ColdStartGame() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isGameOpen, setIsGameOpen] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
-  
+
   // Game states
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -61,7 +61,7 @@ export default function ColdStartGame() {
     try {
       const saved = localStorage.getItem("cineverse_popcorn_high_score");
       if (saved) setHighScore(parseInt(saved, 10) || 0);
-    } catch {}
+    } catch { }
   }, []);
 
   // Listen for custom trigger event to open game anytime from Navbar
@@ -84,7 +84,7 @@ export default function ColdStartGame() {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2800);
-        
+
         // Probe local proxy or direct API
         const res = await fetch("/api/v1/health", {
           signal: controller.signal,
@@ -259,7 +259,7 @@ export default function ColdStartGame() {
                 setHighScore(nextScore);
                 try {
                   localStorage.setItem("cineverse_popcorn_high_score", nextScore.toString());
-                } catch {}
+                } catch { }
               }
             }
             currentItems.splice(i, 1);
@@ -466,11 +466,10 @@ export default function ColdStartGame() {
                   </h3>
                   <div className="flex items-center gap-1.5 text-[11px]">
                     <span
-                      className={`w-2 h-2 rounded-full ${
-                        serverState === "online"
+                      className={`w-2 h-2 rounded-full ${serverState === "online"
                           ? "bg-emerald-400 animate-pulse"
                           : "bg-amber-400 animate-ping"
-                      }`}
+                        }`}
                     />
                     <span
                       className={
@@ -603,3 +602,4 @@ export default function ColdStartGame() {
     </>
   );
 }
+

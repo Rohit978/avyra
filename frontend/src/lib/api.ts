@@ -569,17 +569,25 @@ export async function getPlaybackOptions(
   const sNum = season || 1;
   const epNum = episode || 1;
 
-  const vidboltUrl = isMovie
-    ? `https://vidbolt.xyz/movie/${resolved.tmdb_id}`
-    : `https://vidbolt.xyz/tv/${resolved.tmdb_id}/${sNum}/${epNum}`;
+  const vidsrcUrl = isMovie
+    ? `https://vidsrc.me/embed/movie?tmdb=${resolved.tmdb_id}`
+    : `https://vidsrc.me/embed/tv?tmdb=${resolved.tmdb_id}&season=${sNum}&episode=${epNum}`;
+
+  const twoEmbedUrl = isMovie
+    ? `https://www.2embed.cc/embed/${resolved.tmdb_id}`
+    : `https://www.2embed.cc/embedtv/${resolved.tmdb_id}&s=${sNum}&e=${epNum}`;
+
+  const vidflixUrl = isMovie
+    ? `https://vidsrc.pm/embed/movie?tmdb=${resolved.tmdb_id}`
+    : `https://vidsrc.pm/embed/tv?tmdb=${resolved.tmdb_id}&season=${sNum}&episode=${epNum}`;
 
   const reelsUrl = isMovie
     ? `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50`
     : `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`;
 
-  const vidsrcUrl = isMovie
-    ? `https://vidsrc.to/embed/movie/${resolved.tmdb_id}`
-    : `https://vidsrc.to/embed/tv/${resolved.tmdb_id}/${sNum}/${epNum}`;
+  const vidboltUrl = isMovie
+    ? `https://vidbolt.xyz/movie/${resolved.tmdb_id}`
+    : `https://vidbolt.xyz/tv/${resolved.tmdb_id}/${sNum}/${epNum}`;
 
   const fallback = {
     media_id: id,
@@ -591,24 +599,38 @@ export async function getPlaybackOptions(
     episode_number: isMovie ? null : epNum,
     embed_sources: [
       {
-        id: isMovie ? "vidbolt" : "vidbolt-tv",
-        name: "Server 1",
-        embed_url: vidboltUrl,
-        domain: "vidbolt.xyz",
+        id: "vidsrc-primary",
+        name: "Server 1 (Fast & Clean)",
+        embed_url: vidsrcUrl,
+        domain: "vidsrc.me",
         is_primary: true,
       },
       {
+        id: "2embed",
+        name: "Server 2 (2Embed HD)",
+        embed_url: twoEmbedUrl,
+        domain: "2embed.cc",
+        is_primary: false,
+      },
+      {
+        id: "vidflix",
+        name: "Server 3 (Vidflix)",
+        embed_url: vidflixUrl,
+        domain: "vidsrc.pm",
+        is_primary: false,
+      },
+      {
         id: "reelsdownload",
-        name: "Server 2",
+        name: "Server 4 (Reels)",
         embed_url: reelsUrl,
         domain: "embed.reelsdownload.online",
         is_primary: false,
       },
       {
-        id: "vidsrc",
-        name: "Server 3",
-        embed_url: vidsrcUrl,
-        domain: "vidsrc.to",
+        id: isMovie ? "vidbolt" : "vidbolt-tv",
+        name: "Server 5 (Vidbolt)",
+        embed_url: vidboltUrl,
+        domain: "vidbolt.xyz",
         is_primary: false,
       },
     ],

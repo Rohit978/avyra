@@ -100,13 +100,17 @@ async def test_movie_playback_options(playback_test_client):
     data = res.json()
     assert data["has_stream"] is True
     assert data["tmdb_id"] == "550"
-    assert len(data["embed_sources"]) == 2
+    assert len(data["embed_sources"]) >= 2
+
+    # Check Primary clean template
+    primary = next(s for s in data["embed_sources"] if s.get("is_primary"))
+    assert primary["is_primary"] is True
+    assert "550" in primary["embed_url"]
 
     # Check Vidbolt movie template
     vidbolt = next(s for s in data["embed_sources"] if "vidbolt" in s["id"])
     assert vidbolt["embed_url"] == "https://vidbolt.xyz/movie/550"
     assert vidbolt["domain"] == "vidbolt.xyz"
-    assert vidbolt["is_primary"] is True
 
     # Check ReelsDownload template
     reels = next(s for s in data["embed_sources"] if "reelsdownload" in s["id"])

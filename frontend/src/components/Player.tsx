@@ -293,11 +293,7 @@ export default function Player({ playback }: PlayerProps) {
             Server:
           </span>
           <div className="flex items-center gap-1.5">
-            {playback.embed_sources.map((source, idx) => {
-              const label =
-                source.name === "Server 1" || source.name === "Server 2"
-                  ? source.name
-                  : `Server ${idx + 1}`;
+            {playback.embed_sources.map((source) => {
               return (
                 <button
                   key={source.id}
@@ -313,7 +309,7 @@ export default function Player({ playback }: PlayerProps) {
                       activeSource.id === source.id ? "bg-white" : "bg-neutral-500"
                     }`}
                   />
-                  {label}
+                  {source.name}
                 </button>
               );
             })}
@@ -416,6 +412,11 @@ export default function Player({ playback }: PlayerProps) {
           title={`${playback.title} Player`}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
           referrerPolicy="origin"
+          sandbox={
+            adShieldActive && !activeSource.domain.includes("vidbolt")
+              ? "allow-scripts allow-same-origin allow-forms allow-presentation"
+              : undefined
+          }
           className="absolute inset-0 w-full h-full border-0 z-0"
           allowFullScreen
         />
@@ -482,6 +483,27 @@ export default function Player({ playback }: PlayerProps) {
         </div>
       </div>
 
+      {/* Notice when user switches to Vidbolt */}
+      {activeSource.domain.includes("vidbolt") && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-xs text-amber-200">
+          <div className="flex items-center gap-2.5">
+            <span className="text-lg">⚠️</span>
+            <p className="leading-snug">
+              <strong>Notice:</strong> Vidbolt actively disables security sandboxing to inject pop-up ads. For a clean, pop-up blocked player, switch to <strong>Server 1 (Fast & Clean)</strong> or enable <strong>AdGuard DNS</strong>.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              const s1 = playback.embed_sources[0];
+              if (s1) setActiveSourceId(s1.id);
+            }}
+            className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg transition-colors text-xs text-center"
+          >
+            Switch to Server 1
+          </button>
+        </div>
+      )}
+
       {/* Ad Shield & AdGuard DNS Configuration Modal */}
       {showAdBlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
@@ -513,21 +535,21 @@ export default function Player({ playback }: PlayerProps) {
 
             {/* Modal Body */}
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
-              {/* Explanation of Server 1 */}
+              {/* Explanation of Embed Ads */}
               <div className="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
                 <div className="font-semibold text-white flex items-center gap-1.5 text-sm">
-                  <span>ℹ️ Why does Server 1 show ads?</span>
+                  <span>ℹ️ Why do some streaming servers show ads?</span>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Server 1 is powered by free streaming embed providers (e.g. Vidbolt). Free hosts inject pop-under ads, redirects, and tracking scripts to monetize playback.
+                  Third-party embed networks (such as Vidbolt) monetize by injecting pop-up ads and click redirection scripts. They even intentionally disable video playback if sandbox security is detected. To ensure a smooth experience, CineVerse routes through fast, clean providers (VidSrc &amp; 2Embed) with strict browser pop-up blocking enabled.
                 </p>
               </div>
 
-              {/* Layer 1: Client-Side Anti-Popup Interceptor */}
+              {/* Layer 1: Native Anti-Popup Sandbox Shield */}
               <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-emerald-400 flex items-center gap-1.5">
-                    <span>🛡️ Layer 1: Window Pop-up Shield</span>
+                    <span>🛡️ Layer 1: Anti-Popup Sandbox Shield</span>
                   </div>
                   <button
                     onClick={() => setAdShieldActive(!adShieldActive)}
@@ -541,7 +563,7 @@ export default function Player({ playback }: PlayerProps) {
                   </button>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Third-party players like Vidbolt actively disable video playback if an iframe is sandboxed. Our shield intercepts rogue <code className="text-amber-400">window.open()</code> popunders, new ad tabs, and malicious redirect attempts so the video plays without triggering player lockouts.
+                  Our sandbox policy strictly removes <code className="text-amber-400">allow-popups</code> and <code className="text-amber-400">allow-top-navigation</code> from clean servers (Server 1 through Server 4). Unwanted new tab popunders, page hijacking redirects, and click redirects are blocked at the browser engine level without disrupting video streaming.
                 </p>
               </div>
 
