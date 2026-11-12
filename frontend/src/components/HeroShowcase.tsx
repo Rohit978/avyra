@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import { MediaSummary } from "../lib/api";
 
@@ -7,15 +9,17 @@ interface HeroShowcaseProps {
 }
 
 export default function HeroShowcase({ media }: HeroShowcaseProps) {
+  const [backdropFailed, setBackdropFailed] = useState(false);
   const year = media.release_date ? media.release_date.slice(0, 4) : "";
 
   return (
     <div className="relative w-full h-[65vh] min-h-[460px] max-h-[680px] bg-neutral-950 overflow-hidden flex items-end">
       {/* Backdrop Image */}
-      {media.backdrop_url && (
+      {media.backdrop_url && !backdropFailed && (
         <img
           src={media.backdrop_url}
           alt={media.title}
+          onError={() => setBackdropFailed(true)}
           className="absolute inset-0 w-full h-full object-cover object-center opacity-40 scale-105"
         />
       )}

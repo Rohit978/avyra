@@ -79,12 +79,12 @@ export default function MediaCarousel({
       >
         {isLoading
           ? Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="min-w-[150px] sm:min-w-[180px] md:min-w-[200px]">
+              <div key={idx} className="w-[150px] sm:w-[185px] md:w-[210px] shrink-0">
                 <MediaCardSkeleton />
               </div>
             ))
           : items.map((item) => (
-              <div key={item.id} className="min-w-[150px] sm:min-w-[180px] md:min-w-[200px]">
+              <div key={item.id} className="w-[150px] sm:w-[185px] md:w-[210px] shrink-0">
                 <MediaCard media={item} />
               </div>
             ))}

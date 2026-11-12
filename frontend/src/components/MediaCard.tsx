@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import { MediaSummary } from "../lib/api";
 
@@ -7,6 +9,7 @@ interface MediaCardProps {
 }
 
 export default function MediaCard({ media }: MediaCardProps) {
+  const [imgError, setImgError] = useState(false);
   const year = media.release_date ? media.release_date.slice(0, 4) : null;
 
   return (
@@ -16,15 +19,16 @@ export default function MediaCard({ media }: MediaCardProps) {
     >
       {/* Poster */}
       <div className="relative w-full aspect-[2/3] bg-neutral-900 overflow-hidden">
-        {media.poster_url ? (
+        {media.poster_url && !imgError ? (
           <img
             src={media.poster_url}
             alt={media.title}
             loading="lazy"
+            onError={() => setImgError(true)}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-neutral-500">
+          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-neutral-500 bg-neutral-900">
             <svg
               className="w-10 h-10 mb-2 opacity-50"
               fill="none"
@@ -38,7 +42,7 @@ export default function MediaCard({ media }: MediaCardProps) {
                 d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
               />
             </svg>
-            <span className="text-xs">No Poster</span>
+            <span className="text-xs font-medium text-neutral-400 truncate max-w-full px-2">{media.title}</span>
           </div>
         )}
 
