@@ -97,9 +97,9 @@ export default function MediaDetailClient({
     setSelectedEpisodeNumber(epNum);
 
     const tmdbId =
-      currentPlayback.tmdb_id ||
       media.provenance.find((p) => p.provider === "tmdb")?.external_id ||
-      "157336";
+      currentPlayback.tmdb_id ||
+      "693134";
 
     setCurrentPlayback({
       ...currentPlayback,
@@ -118,8 +118,15 @@ export default function MediaDetailClient({
         {
           id: "reelsdownload",
           name: "Server 2",
-          embed_url: `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50`,
+          embed_url: `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`,
           domain: "embed.reelsdownload.online",
+          is_primary: false,
+        },
+        {
+          id: "vidsrc",
+          name: "Server 3",
+          embed_url: `https://vidsrc.to/embed/tv/${tmdbId}/${sNum}/${epNum}`,
+          domain: "vidsrc.to",
           is_primary: false,
         },
       ],

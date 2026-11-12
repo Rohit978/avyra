@@ -27,6 +27,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])
+@app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
 async def health_check(db: AsyncSession = Depends(get_db)):
     """Service health check endpoint with database ping."""
     db_status = "connected"

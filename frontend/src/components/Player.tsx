@@ -35,11 +35,23 @@ export default function Player({ playback }: PlayerProps) {
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [adShieldActive, setAdShieldActive] = useState(true);
+  const [showAdBlockModal, setShowAdBlockModal] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
   const [skipFeedback, setSkipFeedback] = useState<{
     side: "left" | "right";
     label: string;
     key: number;
   } | null>(null);
+
+  const copyToClipboard = (text: string, label: string) => {
+    try {
+      navigator.clipboard.writeText(text);
+      setCopiedText(label);
+      setTimeout(() => setCopiedText(null), 2000);
+    } catch {}
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -293,8 +305,28 @@ export default function Player({ playback }: PlayerProps) {
           </div>
         </div>
 
-        {/* Quick Skip Buttons & Fullscreen Toggle */}
+        {/* Quick Skip Buttons, Ad Shield & Fullscreen Toggle */}
         <div className="flex items-center gap-1.5">
+          {/* Ad Shield Button */}
+          <button
+            onClick={() => setShowAdBlockModal(true)}
+            title="Ad Blocker & AdGuard DNS Shield"
+            className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 active:scale-95 ${
+              adShieldActive
+                ? "bg-emerald-950/70 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/80 shadow-sm"
+                : "bg-surface-elevated border-surface-border text-neutral-400 hover:text-white"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                adShieldActive ? "bg-emerald-400 animate-pulse" : "bg-neutral-500"
+              }`}
+            />
+            <span className="hidden sm:inline">Ad Shield:</span>
+            <span>{adShieldActive ? "ON" : "OFF"}</span>
+            <span className="text-[10px]">🛡️</span>
+          </button>
+
           <button
             onClick={() => seekDelta(-10)}
             title="Double-tap left or click to skip 10s backward"
@@ -362,13 +394,18 @@ export default function Player({ playback }: PlayerProps) {
           isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 w-screen h-screen" : ""
         }`}
       >
-        {/* Primary Video Embed */}
+        {/* Primary Video Embed with Anti-Popup Sandbox */}
         <iframe
           ref={iframeRef}
           src={activeSource.embed_url}
           title={`${playback.title} Player`}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
           referrerPolicy="origin"
+          sandbox={
+            adShieldActive
+              ? "allow-scripts allow-same-origin allow-forms allow-presentation"
+              : undefined
+          }
           className="absolute inset-0 w-full h-full border-0 z-0"
           allowFullScreen
         />
@@ -434,6 +471,137 @@ export default function Player({ playback }: PlayerProps) {
           <span>Double-tap left/right to skip 10s • F for Landscape Fullscreen</span>
         </div>
       </div>
+
+      {/* Ad Shield & AdGuard DNS Configuration Modal */}
+      {showAdBlockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-lg bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-neutral-800 bg-neutral-900/60 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🛡️</span>
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    Ad Shield & AdGuard DNS
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono font-semibold">
+                      ACTIVE
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Why ads occur on Server 1 & how to eliminate them 100%
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowAdBlockModal(false)}
+                className="p-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {/* Explanation of Server 1 */}
+              <div className="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+                <div className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                  <span>ℹ️ Why does Server 1 show ads?</span>
+                </div>
+                <p className="text-neutral-300 leading-relaxed">
+                  Server 1 is powered by free streaming embed providers (e.g. Vidbolt). Free hosts inject pop-under ads, redirects, and tracking scripts to monetize playback.
+                </p>
+              </div>
+
+              {/* Layer 1: Built-in Anti-Popup Sandbox */}
+              <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-emerald-400 flex items-center gap-1.5">
+                    <span>🛡️ Layer 1: Anti-Popup Sandbox</span>
+                  </div>
+                  <button
+                    onClick={() => setAdShieldActive(!adShieldActive)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
+                      adShieldActive
+                        ? "bg-emerald-600 text-white"
+                        : "bg-neutral-800 text-neutral-400 border border-neutral-700"
+                    }`}
+                  >
+                    {adShieldActive ? "ENABLED" : "DISABLED"}
+                  </button>
+                </div>
+                <p className="text-neutral-300 leading-relaxed">
+                  Strictly removes <code className="text-amber-400">allow-popups</code> and <code className="text-amber-400">allow-top-navigation</code> from the video player. All unwanted <code className="text-amber-400">window.open()</code> tabs, new popunder windows, and page hijacking redirects are stopped cold.
+                </p>
+              </div>
+
+              {/* Layer 2: AdGuard DNS (Network-Level Blocker) */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-neutral-900 to-neutral-900 border border-emerald-500/30 space-y-3">
+                <div className="font-bold text-white flex items-center gap-1.5 text-sm">
+                  <span>🌐 Layer 2: AdGuard DNS (Ultimate Block)</span>
+                </div>
+                <p className="text-neutral-300 leading-relaxed">
+                  Setting your device or browser DNS to AdGuard stops ad servers, trackers, and popup scripts at the network socket layer before they even start downloading:
+                </p>
+
+                {/* DNS Endpoints with 1-Click Copy */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/60 border border-neutral-800">
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">Private DNS / DoH Hostname</div>
+                      <div className="font-mono text-emerald-300 text-xs font-bold">dns.adguard-dns.com</div>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard("dns.adguard-dns.com", "private-dns")}
+                      className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-medium transition-colors"
+                    >
+                      {copiedText === "private-dns" ? "Copied! ✓" : "Copy"}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/60 border border-neutral-800">
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">DNS-over-HTTPS (DoH) URL</div>
+                      <div className="font-mono text-emerald-300 text-xs font-bold truncate max-w-[210px] sm:max-w-xs">
+                        https://dns.adguard-dns.com/dns-query
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard("https://dns.adguard-dns.com/dns-query", "doh")}
+                      className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-medium transition-colors"
+                    >
+                      {copiedText === "doh" ? "Copied! ✓" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Setup Instructions */}
+                <div className="pt-2 border-t border-neutral-800/80 space-y-1.5 text-[11px] text-neutral-300">
+                  <div className="font-semibold text-white">How to enable in 10 seconds:</div>
+                  <ul className="list-disc pl-4 space-y-1 text-neutral-400">
+                    <li><strong className="text-neutral-200">Android:</strong> Settings &rarr; Network &rarr; Private DNS &rarr; enter <code className="text-emerald-400">dns.adguard-dns.com</code>.</li>
+                    <li><strong className="text-neutral-200">Chrome / Edge / Brave:</strong> Settings &rarr; Privacy & Security &rarr; Use secure DNS &rarr; Custom &rarr; paste the DoH URL.</li>
+                    <li><strong className="text-neutral-200">Windows:</strong> Settings &rarr; Network & Internet &rarr; IPv4 DNS &rarr; <code className="text-emerald-400">94.140.14.14</code>.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between">
+              <span className="text-[11px] text-neutral-400">
+                Tip: You can also switch to Server 2 or Server 3 anytime.
+              </span>
+              <button
+                onClick={() => setShowAdBlockModal(false)}
+                className="bg-primary hover:bg-primary-hover text-white font-bold py-1.5 px-4 rounded-xl text-xs transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

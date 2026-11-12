@@ -90,8 +90,18 @@ export default function Navbar() {
           </nav>
         </div>
 
-        {/* Search & Profile */}
-        <div className="flex items-center gap-4 flex-1 max-w-md justify-end">
+        {/* Search & Actions */}
+        <div className="flex items-center gap-3 flex-1 max-w-md justify-end">
+          {/* Popcorn Catcher Mini-Game Launcher */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-cineverse-game"))}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-elevated hover:bg-neutral-800 text-xs font-semibold text-neutral-300 hover:text-white border border-surface-border transition-all hover:scale-105 shadow-sm"
+            title="Play Popcorn Catcher Arcade Mini-Game"
+          >
+            <span>🍿</span>
+            <span className="hidden sm:inline">Arcade</span>
+          </button>
+
           <div ref={dropdownRef} className="relative w-full max-w-xs">
             <form onSubmit={handleSearchSubmit}>
               <div className="relative">

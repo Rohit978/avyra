@@ -432,51 +432,88 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
   );
 }
 
+export const TMDB_ID_MAP: Record<
+  string,
+  { tmdb_id: string; title: string; media_type: "MOVIE" | "TV_SHOW" | "ANIME" }
+> = {
+  "00000000-0000-0000-0000-000000000001": { tmdb_id: "693134", title: "Dune: Part Two", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000002": { tmdb_id: "872585", title: "Oppenheimer", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000003": { tmdb_id: "157336", title: "Interstellar", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000004": { tmdb_id: "27205", title: "Inception", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000005": { tmdb_id: "155", title: "The Dark Knight", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000006": { tmdb_id: "361743", title: "Top Gun: Maverick", media_type: "MOVIE" },
+  "00000000-0000-0000-0000-000000000007": { tmdb_id: "1396", title: "Breaking Bad", media_type: "TV_SHOW" },
+  "00000000-0000-0000-0000-000000000008": { tmdb_id: "66732", title: "Stranger Things", media_type: "TV_SHOW" },
+  "00000000-0000-0000-0000-000000000009": { tmdb_id: "100088", title: "The Last of Us", media_type: "TV_SHOW" },
+  "00000000-0000-0000-0000-000000000010": { tmdb_id: "126308", title: "Shogun", media_type: "TV_SHOW" },
+  "00000000-0000-0000-0000-000000000011": { tmdb_id: "1399", title: "Game of Thrones", media_type: "TV_SHOW" },
+  "00000000-0000-0000-0000-000000000012": { tmdb_id: "94605", title: "Arcane", media_type: "ANIME" },
+  "00000000-0000-0000-0000-000000000013": { tmdb_id: "1429", title: "Attack on Titan", media_type: "ANIME" },
+  "00000000-0000-0000-0000-000000000014": { tmdb_id: "85937", title: "Demon Slayer", media_type: "ANIME" },
+  "00000000-0000-0000-0000-000000000015": { tmdb_id: "95479", title: "Jujutsu Kaisen", media_type: "ANIME" },
+};
+
+function resolveTmdbId(id: string): { tmdb_id: string; title: string; media_type: string } {
+  if (TMDB_ID_MAP[id]) {
+    return TMDB_ID_MAP[id];
+  }
+  const byTitle = MOCK_ITEMS.find((m) => m.id === id);
+  if (byTitle && TMDB_ID_MAP[byTitle.id]) {
+    return TMDB_ID_MAP[byTitle.id];
+  }
+  if (/^\d+$/.test(id)) {
+    return { tmdb_id: id, title: byTitle?.title || "Featured Stream", media_type: byTitle?.media_type || "MOVIE" };
+  }
+  return { tmdb_id: "693134", title: byTitle?.title || "Dune: Part Two", media_type: byTitle?.media_type || "MOVIE" };
+}
+
 export async function getMediaDetail(id: string): Promise<MediaDetail | null> {
   const item = MOCK_ITEMS.find((m) => m.id === id) || MOCK_HERO;
+  const resolved = resolveTmdbId(id);
   const fallback: MediaDetail = {
     ...item,
-    runtime: 166,
+    runtime: item.media_type === "MOVIE" ? 148 : 55,
     original_language: "en",
     country_of_origin: "US",
     is_adult: false,
     titles: [{ title: item.title, title_type: "primary", language: "en" }],
-    provenance: [{ provider: "tmdb", external_id: "693134" }],
-    season_count: item.media_type !== "MOVIE" ? 1 : 0,
-    episode_count: item.media_type !== "MOVIE" ? 10 : 0,
+    provenance: [{ provider: "tmdb", external_id: resolved.tmdb_id }],
+    season_count: item.media_type !== "MOVIE" ? 4 : 0,
+    episode_count: item.media_type !== "MOVIE" ? 36 : 0,
   };
 
   return safeFetch<MediaDetail>(`${API_BASE_URL}/media/${id}`, fallback);
 }
 
 export async function getMediaCredits(id: string): Promise<MediaCredits> {
+  const resolved = resolveTmdbId(id);
   return safeFetch<MediaCredits>(`${API_BASE_URL}/media/${id}/credits`, {
     cast: [
       {
-        id: "cast-1",
+        id: `cast-${resolved.tmdb_id}-1`,
         person_id: "p-1",
-        name: "Timothée Chalamet",
-        character_name: "Paul Atreides",
-        profile_path: "https://image.tmdb.org/t/p/w185/BE2sdjpgEV2rNTFaFAURSR7Zu8.jpg",
+        name: "Lead Actor",
+        character_name: "Protagonist",
+        profile_path: "https://images.metahub.space/poster/small/tt15239678/img",
         order: 0,
       },
       {
-        id: "cast-2",
+        id: `cast-${resolved.tmdb_id}-2`,
         person_id: "p-2",
-        name: "Zendaya",
-        character_name: "Chani",
-        profile_path: "https://image.tmdb.org/t/p/w185/r3A7evKLrqRZwAoW37v0Q6eH7.jpg",
+        name: "Supporting Cast",
+        character_name: "Co-Star",
+        profile_path: "https://images.metahub.space/poster/small/tt15398776/img",
         order: 1,
       },
     ],
     crew: [
       {
-        id: "crew-1",
+        id: `crew-${resolved.tmdb_id}-1`,
         person_id: "p-3",
-        name: "Denis Villeneuve",
+        name: "Director",
         department: "Directing",
         job: "Director",
-        profile_path: "https://image.tmdb.org/t/p/w185/p2R6V9g97vYfK0.jpg",
+        profile_path: null,
       },
     ],
   });
@@ -526,30 +563,59 @@ export async function getPlaybackOptions(
   if (episode) query.push(`episode=${episode}`);
   const qStr = query.length > 0 ? `?${query.join("&")}` : "";
 
-  return safeFetch(`${API_BASE_URL}/media/${id}/playback-options${qStr}`, {
+  const resolved = resolveTmdbId(id);
+  const item = MOCK_ITEMS.find((m) => m.id === id) || MOCK_HERO;
+  const isMovie = item.media_type === "MOVIE";
+  const sNum = season || 1;
+  const epNum = episode || 1;
+
+  const vidboltUrl = isMovie
+    ? `https://vidbolt.xyz/movie/${resolved.tmdb_id}`
+    : `https://vidbolt.xyz/tv/${resolved.tmdb_id}/${sNum}/${epNum}`;
+
+  const reelsUrl = isMovie
+    ? `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50`
+    : `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`;
+
+  const vidsrcUrl = isMovie
+    ? `https://vidsrc.to/embed/movie/${resolved.tmdb_id}`
+    : `https://vidsrc.to/embed/tv/${resolved.tmdb_id}/${sNum}/${epNum}`;
+
+  const fallback = {
     media_id: id,
-    media_type: "MOVIE",
-    title: "Dune: Part Two",
+    media_type: item.media_type,
+    title: item.title,
     has_stream: true,
-    tmdb_id: "693134",
+    tmdb_id: resolved.tmdb_id,
+    season_number: isMovie ? null : sNum,
+    episode_number: isMovie ? null : epNum,
     embed_sources: [
       {
-        id: "vidbolt",
-        name: "Vidbolt",
-        embed_url: "https://vidbolt.xyz/movie/693134",
+        id: isMovie ? "vidbolt" : "vidbolt-tv",
+        name: "Server 1",
+        embed_url: vidboltUrl,
         domain: "vidbolt.xyz",
         is_primary: true,
       },
       {
         id: "reelsdownload",
-        name: "ReelsDownload",
-        embed_url: "https://embed.reelsdownload.online/player/693134?key=k_5661ac637169a1733857dc50",
+        name: "Server 2",
+        embed_url: reelsUrl,
         domain: "embed.reelsdownload.online",
+        is_primary: false,
+      },
+      {
+        id: "vidsrc",
+        name: "Server 3",
+        embed_url: vidsrcUrl,
+        domain: "vidsrc.to",
         is_primary: false,
       },
     ],
     sandbox_policy: "allow-scripts allow-same-origin allow-forms allow-presentation",
-    referrer_policy: "no-referrer",
-  });
+    referrer_policy: "origin",
+  };
+
+  return safeFetch(`${API_BASE_URL}/media/${id}/playback-options${qStr}`, fallback);
 }
 

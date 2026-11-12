@@ -2,9 +2,22 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from backend.app.core.config import settings
 
+def normalize_async_url(url: str) -> str:
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    url = (
+        url.replace("channel_binding=require&", "")
+        .replace("&channel_binding=require", "")
+        .replace("channel_binding=require", "")
+        .replace("sslmode=require", "ssl=require")
+    )
+    return url
+
+async_db_url = normalize_async_url(settings.DATABASE_URL)
+
 # Create async engine with asyncpg
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    async_db_url,
     echo=(settings.ENVIRONMENT == "development_debug"),
     future=True,
     pool_pre_ping=True,
