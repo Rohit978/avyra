@@ -38,6 +38,33 @@ export default function Player({ playback }: PlayerProps) {
   const [adShieldActive, setAdShieldActive] = useState(true);
   const [showAdBlockModal, setShowAdBlockModal] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [adBlockDetected, setAdBlockDetected] = useState<boolean | null>(null);
+
+  // Live probe to verify if user's browser or DNS is blocking ad networks
+  useEffect(() => {
+    let isCancelled = false;
+    const testAdFilter = async () => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 1800);
+        await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
+          method: "HEAD",
+          mode: "no-cors",
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        // If fetch succeeded, the ad network was reached (adblocker/DNS is not active)
+        if (!isCancelled) setAdBlockDetected(false);
+      } catch {
+        // Network blocked/aborted = adblocker or AdGuard DNS sinkhole is actively working!
+        if (!isCancelled) setAdBlockDetected(true);
+      }
+    };
+    testAdFilter();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const [skipFeedback, setSkipFeedback] = useState<{
     side: "left" | "right";
@@ -318,23 +345,41 @@ export default function Player({ playback }: PlayerProps) {
 
         {/* Quick Skip Buttons, Ad Shield & Fullscreen Toggle */}
         <div className="flex items-center gap-1.5">
-          {/* Ad Shield Button */}
+          {/* Ad Shield Button with Live Network AdBlock Detection */}
           <button
             onClick={() => setShowAdBlockModal(true)}
-            title="Ad Blocker & AdGuard DNS Shield"
+            title="Ad Blocker & AdGuard DNS Shield Diagnostics"
             className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 active:scale-95 ${
-              adShieldActive
+              adBlockDetected === true
+                ? "bg-emerald-950/70 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/80 shadow-sm"
+                : adBlockDetected === false
+                ? "bg-amber-950/70 border-amber-500/50 text-amber-300 hover:bg-amber-900/80 shadow-sm"
+                : adShieldActive
                 ? "bg-emerald-950/70 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/80 shadow-sm"
                 : "bg-surface-elevated border-surface-border text-neutral-400 hover:text-white"
             }`}
           >
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                adShieldActive ? "bg-emerald-400 animate-pulse" : "bg-neutral-500"
+                adBlockDetected === true
+                  ? "bg-emerald-400 animate-pulse"
+                  : adBlockDetected === false
+                  ? "bg-amber-400 animate-ping"
+                  : adShieldActive
+                  ? "bg-emerald-400"
+                  : "bg-neutral-500"
               }`}
             />
-            <span className="hidden sm:inline">Ad Shield:</span>
-            <span>{adShieldActive ? "ON" : "OFF"}</span>
+            <span className="hidden sm:inline">AdBlock:</span>
+            <span>
+              {adBlockDetected === true
+                ? "ACTIVE"
+                : adBlockDetected === false
+                ? "NOT DETECTED"
+                : adShieldActive
+                ? "SHIELD ON"
+                : "OFF"}
+            </span>
             <span className="text-[10px]">🛡️</span>
           </button>
 
@@ -535,65 +580,115 @@ export default function Player({ playback }: PlayerProps) {
 
             {/* Modal Body */}
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
-              {/* Explanation of Embed Ads */}
-              <div className="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
-                <div className="font-semibold text-white flex items-center gap-1.5 text-sm">
-                  <span>ℹ️ Why do some streaming servers show ads?</span>
+              {/* Live AdBlock Diagnostic Card */}
+              <div
+                className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+                  adBlockDetected === true
+                    ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-200"
+                    : adBlockDetected === false
+                    ? "bg-amber-950/40 border-amber-500/40 text-amber-200"
+                    : "bg-surface-elevated border-surface-border text-neutral-300"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">
+                    {adBlockDetected === true ? "✅" : adBlockDetected === false ? "⚠️" : "🔍"}
+                  </span>
+                  <div>
+                    <div className="font-bold text-white text-xs">
+                      {adBlockDetected === true
+                        ? "AdBlock / DNS Active"
+                        : adBlockDetected === false
+                        ? "AdBlock NOT Detected"
+                        : "Checking AdBlocker..."}
+                    </div>
+                    <div className="text-[11px] opacity-80">
+                      {adBlockDetected === true
+                        ? "Your browser or DNS is actively dropping ad network traffic."
+                        : adBlockDetected === false
+                        ? "Ad network scripts are still reachable. Follow the methods below to block all ads."
+                        : "Detecting network filter..."}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-neutral-300 leading-relaxed">
-                  Third-party embed networks (such as Vidbolt) monetize by injecting pop-up ads and click redirection scripts. They even intentionally disable video playback if sandbox security is detected. To ensure a smooth experience, CineVerse routes through fast, clean providers (VidSrc &amp; 2Embed) with strict browser pop-up blocking enabled.
-                </p>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    adBlockDetected === true
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                      : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  }`}
+                >
+                  {adBlockDetected === true ? "Protected" : "Vulnerable"}
+                </span>
               </div>
 
-              {/* Layer 1: Native Anti-Popup Sandbox Shield */}
-              <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="font-bold text-emerald-400 flex items-center gap-1.5">
-                    <span>🛡️ Layer 1: Anti-Popup Sandbox Shield</span>
-                  </div>
+              {/* Way 1: Switch to Server 1 (VidLink HD - Cleanest Stream) */}
+              <div className="p-3.5 rounded-xl bg-surface-elevated border border-surface-border space-y-2">
+                <div className="font-semibold text-white flex items-center justify-between text-sm">
+                  <span>⚡ Way 1: Use Server 1 (VidLink - No Ads)</span>
                   <button
-                    onClick={() => setAdShieldActive(!adShieldActive)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
-                      adShieldActive
-                        ? "bg-emerald-600 text-white"
-                        : "bg-neutral-800 text-neutral-400 border border-neutral-700"
-                    }`}
+                    onClick={() => {
+                      const s1 = playback.embed_sources[0];
+                      if (s1) setActiveSourceId(s1.id);
+                      setShowAdBlockModal(false);
+                    }}
+                    className="px-2.5 py-1 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-bold transition-colors"
                   >
-                    {adShieldActive ? "ENABLED" : "DISABLED"}
+                    Switch to Server 1
                   </button>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Our sandbox policy strictly removes <code className="text-amber-400">allow-popups</code> and <code className="text-amber-400">allow-top-navigation</code> from clean servers (Server 1 through Server 4). Unwanted new tab popunders, page hijacking redirects, and click redirects are blocked at the browser engine level without disrupting video streaming.
+                  We added <strong>VidLink</strong> as our primary player. Unlike older embed providers (Vidbolt/VidSrc), VidLink runs a clean modern UI with <strong>no popunder redirect loops</strong>.
                 </p>
               </div>
 
-              {/* Layer 2: AdGuard DNS (Network-Level Blocker) */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-neutral-900 to-neutral-900 border border-emerald-500/30 space-y-3">
-                <div className="font-bold text-white flex items-center gap-1.5 text-sm">
-                  <span>🌐 Layer 2: AdGuard DNS (Ultimate Block)</span>
+              {/* Way 2: Browser Extension (uBlock Origin - 100% Effective) */}
+              <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
+                <div className="font-bold text-white flex items-center justify-between text-sm">
+                  <span>🛡️ Way 2: Install uBlock Origin (Guaranteed Block)</span>
+                  <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">
+                    RECOMMENDED
+                  </span>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Setting your device or browser DNS to AdGuard stops ad servers, trackers, and popup scripts at the network socket layer before they even start downloading:
+                  Browser extensions have full authority to kill hidden click overlays, popunders, and iframe trackers that regular websites cannot touch due to cross-origin restrictions.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <a
+                    href="https://chromewebstore.google.com/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-[11px] border border-neutral-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Get for Chrome / Edge / Brave ↗</span>
+                  </a>
+                  <a
+                    href="https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-[11px] border border-neutral-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>Get for Firefox ↗</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Way 3: AdGuard DNS (Network & Browser DoH) */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-neutral-900 to-neutral-900 border border-emerald-500/30 space-y-3">
+                <div className="font-bold text-white flex items-center gap-1.5 text-sm">
+                  <span>🌐 Way 3: AdGuard DNS (dns.adguard-dns.com)</span>
+                </div>
+                <p className="text-neutral-300 leading-relaxed">
+                  AdGuard DNS drops connection to ad networks before scripts even start loading.
+                  <br />
+                  <strong className="text-amber-300">⚠️ Why didn&apos;t Windows DNS block Chrome ads?</strong> Chrome and Edge have internal &quot;Secure DNS&quot; enabled that <em>overrides your Windows DNS</em>! You must set it in Chrome directly:
                 </p>
 
                 {/* DNS Endpoints with 1-Click Copy */}
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/60 border border-neutral-800">
                     <div>
-                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">Private DNS / DoH Hostname</div>
-                      <div className="font-mono text-emerald-300 text-xs font-bold">dns.adguard-dns.com</div>
-                    </div>
-                    <button
-                      onClick={() => copyToClipboard("dns.adguard-dns.com", "private-dns")}
-                      className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-medium transition-colors"
-                    >
-                      {copiedText === "private-dns" ? "Copied! ✓" : "Copy"}
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/60 border border-neutral-800">
-                    <div>
-                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">DNS-over-HTTPS (DoH) URL</div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">Chrome / Edge / Brave (DoH URL)</div>
                       <div className="font-mono text-emerald-300 text-xs font-bold truncate max-w-[210px] sm:max-w-xs">
                         https://dns.adguard-dns.com/dns-query
                       </div>
@@ -605,15 +700,32 @@ export default function Player({ playback }: PlayerProps) {
                       {copiedText === "doh" ? "Copied! ✓" : "Copy"}
                     </button>
                   </div>
+
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/60 border border-neutral-800">
+                    <div>
+                      <div className="text-[10px] text-neutral-400 uppercase font-semibold">Android Private DNS Hostname</div>
+                      <div className="font-mono text-emerald-300 text-xs font-bold">dns.adguard-dns.com</div>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard("dns.adguard-dns.com", "private-dns")}
+                      className="px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-medium transition-colors"
+                    >
+                      {copiedText === "private-dns" ? "Copied! ✓" : "Copy"}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Setup Instructions */}
                 <div className="pt-2 border-t border-neutral-800/80 space-y-1.5 text-[11px] text-neutral-300">
-                  <div className="font-semibold text-white">How to enable in 10 seconds:</div>
+                  <div className="font-semibold text-white">How to enable in Chrome / Edge (Crucial):</div>
                   <ul className="list-disc pl-4 space-y-1 text-neutral-400">
-                    <li><strong className="text-neutral-200">Android:</strong> Settings &rarr; Network &rarr; Private DNS &rarr; enter <code className="text-emerald-400">dns.adguard-dns.com</code>.</li>
-                    <li><strong className="text-neutral-200">Chrome / Edge / Brave:</strong> Settings &rarr; Privacy & Security &rarr; Use secure DNS &rarr; Custom &rarr; paste the DoH URL.</li>
-                    <li><strong className="text-neutral-200">Windows:</strong> Settings &rarr; Network & Internet &rarr; IPv4 DNS &rarr; <code className="text-emerald-400">94.140.14.14</code>.</li>
+                    <li>Open <strong>Settings</strong> &rarr; <strong>Privacy and security</strong> &rarr; <strong>Security</strong>.</li>
+                    <li>Scroll down to <strong>Use secure DNS</strong> &rarr; select <strong>Custom</strong>.</li>
+                    <li>Paste: <code className="text-emerald-400">https://dns.adguard-dns.com/dns-query</code></li>
+                  </ul>
+                  <div className="font-semibold text-white pt-1">On Android:</div>
+                  <ul className="list-disc pl-4 space-y-1 text-neutral-400">
+                    <li>Settings &rarr; Network / Connections &rarr; More connection settings &rarr; Private DNS &rarr; enter <code className="text-emerald-400">dns.adguard-dns.com</code>.</li>
                   </ul>
                 </div>
               </div>

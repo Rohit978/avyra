@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     ANILIST_API_URL: str = "https://graphql.anilist.co"
     
     # Configured Embed Templates
+    VIDLINK_MOVIE_URL_TEMPLATE: str = "https://vidlink.pro/movie/{TMDB_ID}?primaryColor=e11d48&secondaryColor=fbbf24"
+    VIDLINK_TV_URL_TEMPLATE: str = "https://vidlink.pro/tv/{id}/{s}/{e}?primaryColor=e11d48&secondaryColor=fbbf24"
     VIDSRC_MOVIE_URL_TEMPLATE: str = "https://vidsrc.me/embed/movie?tmdb={TMDB_ID}"
     VIDSRC_TV_URL_TEMPLATE: str = "https://vidsrc.me/embed/tv?tmdb={id}&season={s}&episode={e}"
     TWOEMBED_MOVIE_URL_TEMPLATE: str = "https://www.2embed.cc/embed/{TMDB_ID}"
@@ -36,6 +38,7 @@ class Settings(BaseSettings):
     
     # Embed domain allowlist
     ALLOWED_EMBED_DOMAINS: List[str] = [
+        "vidlink.pro",
         "vidsrc.me",
         "vidsrc.pm",
         "vidsrc.to",

@@ -569,6 +569,10 @@ export async function getPlaybackOptions(
   const sNum = season || 1;
   const epNum = episode || 1;
 
+  const vidlinkUrl = isMovie
+    ? `https://vidlink.pro/movie/${resolved.tmdb_id}?primaryColor=e11d48&secondaryColor=fbbf24`
+    : `https://vidlink.pro/tv/${resolved.tmdb_id}/${sNum}/${epNum}?primaryColor=e11d48&secondaryColor=fbbf24`;
+
   const vidsrcUrl = isMovie
     ? `https://vidsrc.me/embed/movie?tmdb=${resolved.tmdb_id}`
     : `https://vidsrc.me/embed/tv?tmdb=${resolved.tmdb_id}&season=${sNum}&episode=${epNum}`;
@@ -599,36 +603,43 @@ export async function getPlaybackOptions(
     episode_number: isMovie ? null : epNum,
     embed_sources: [
       {
-        id: "vidsrc-primary",
-        name: "Server 1 (Fast & Clean)",
-        embed_url: vidsrcUrl,
-        domain: "vidsrc.me",
+        id: "vidlink-primary",
+        name: "Server 1 (VidLink - No Ads)",
+        embed_url: vidlinkUrl,
+        domain: "vidlink.pro",
         is_primary: true,
       },
       {
+        id: "vidsrc",
+        name: "Server 2 (VidSrc)",
+        embed_url: vidsrcUrl,
+        domain: "vidsrc.me",
+        is_primary: false,
+      },
+      {
         id: "2embed",
-        name: "Server 2 (2Embed HD)",
+        name: "Server 3 (2Embed HD)",
         embed_url: twoEmbedUrl,
         domain: "2embed.cc",
         is_primary: false,
       },
       {
         id: "vidflix",
-        name: "Server 3 (Vidflix)",
+        name: "Server 4 (Vidflix)",
         embed_url: vidflixUrl,
         domain: "vidsrc.pm",
         is_primary: false,
       },
       {
         id: "reelsdownload",
-        name: "Server 4 (Reels)",
+        name: "Server 5 (Reels)",
         embed_url: reelsUrl,
         domain: "embed.reelsdownload.online",
         is_primary: false,
       },
       {
         id: isMovie ? "vidbolt" : "vidbolt-tv",
-        name: "Server 5 (Vidbolt)",
+        name: "Server 6 (Vidbolt)",
         embed_url: vidboltUrl,
         domain: "vidbolt.xyz",
         is_primary: false,
