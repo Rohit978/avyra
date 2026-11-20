@@ -111,7 +111,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Search & Arcade Pill */}
+          {/* Search & Spotlight Trigger */}
           <div className="flex items-center gap-2.5 flex-1 lg:flex-initial justify-end max-w-md">
             {/* Search Pill */}
             <div ref={dropdownRef} className="relative w-full max-w-[260px]">
