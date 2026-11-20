@@ -15,9 +15,9 @@ export default function MediaCard({ media }: MediaCardProps) {
   return (
     <Link
       href={`/media/${media.id}`}
-      className="group relative flex flex-col rounded-xl overflow-hidden bg-surface-elevated border border-surface-border transition-all duration-300 hover:scale-[1.03] hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10"
+      className="group relative flex flex-col rounded-2xl overflow-hidden bg-surface border border-white/[0.07] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_0_28px_rgba(225,29,72,0.32)]"
     >
-      {/* Poster */}
+      {/* 2:3 Poster */}
       <div className="relative w-full aspect-[2/3] bg-neutral-900 overflow-hidden">
         {media.poster_url && !imgError ? (
           <img
@@ -28,9 +28,9 @@ export default function MediaCard({ media }: MediaCardProps) {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-neutral-500 bg-neutral-900">
+          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-neutral-500 bg-gradient-to-br from-neutral-900 to-neutral-950">
             <svg
-              className="w-10 h-10 mb-2 opacity-50"
+              className="w-10 h-10 mb-2 opacity-40"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -42,37 +42,45 @@ export default function MediaCard({ media }: MediaCardProps) {
                 d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
               />
             </svg>
-            <span className="text-xs font-medium text-neutral-400 truncate max-w-full px-2">{media.title}</span>
+            <span className="text-xs font-medium text-neutral-400 truncate max-w-full px-2">
+              {media.title}
+            </span>
           </div>
         )}
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Hover Dark Vignette + Play Circle */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07080d]/90 via-[#07080d]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-full bg-primary/90 text-white flex items-center justify-center shadow-[0_0_20px_rgba(225,29,72,0.8)] scale-75 group-hover:scale-100 transition-transform duration-300">
+            <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
 
         {/* Rating Badge */}
         {media.vote_average > 0 && (
-          <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-md border border-neutral-700/50 rounded-md px-2 py-0.5 text-xs font-bold text-amber-400 flex items-center gap-1 shadow-md">
+          <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-md border border-white/10 rounded-lg px-2 py-0.5 text-[11px] font-bold text-amber-400 flex items-center gap-1 shadow-md">
             <span>★</span>
             <span>{media.vote_average.toFixed(1)}</span>
           </div>
         )}
 
         {/* Media Type Pill */}
-        <div className="absolute top-2.5 left-2.5 bg-primary/90 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
+        <div className="absolute top-2.5 left-2.5 bg-primary/90 backdrop-blur-md rounded-lg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md">
           {media.media_type === "TV_SHOW"
             ? "TV"
             : media.media_type === "MOVIE"
-            ? "Film"
+            ? "FILM"
             : media.media_type}
         </div>
       </div>
 
-      {/* Info Section */}
-      <div className="p-3 flex-1 flex flex-col justify-between">
-        <h3 className="text-sm font-semibold text-white truncate group-hover:text-primary transition-colors">
+      {/* Info Footer */}
+      <div className="p-3 flex-1 flex flex-col justify-between bg-gradient-to-b from-surface to-[#0a0c12]">
+        <h3 className="text-sm font-bold text-white truncate group-hover:text-rose-400 transition-colors">
           {media.title}
         </h3>
-        <div className="flex items-center justify-between mt-1 text-xs text-neutral-400">
+        <div className="flex items-center justify-between mt-1 text-[11px] text-neutral-400 font-medium">
           <span>{year || "TBA"}</span>
           {media.genres.length > 0 && (
             <span className="truncate max-w-[100px] text-neutral-500">

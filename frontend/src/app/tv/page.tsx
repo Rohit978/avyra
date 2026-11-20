@@ -26,7 +26,7 @@ export default async function TVSeriesPage({ searchParams }: TVPageProps) {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-8">
       {/* Page Header */}
       <div className="border-b border-surface-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

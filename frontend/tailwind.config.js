@@ -9,20 +9,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#0b0c0f",
+        background: "#07080d",
         surface: {
-          DEFAULT: "#13151b",
-          elevated: "#1c1f26",
-          border: "#282c37",
+          DEFAULT: "#0e1017",
+          elevated: "#151822",
+          border: "#232736",
         },
         primary: {
-          DEFAULT: "#e50914",
-          hover: "#f40612",
+          DEFAULT: "#e11d48",
+          hover: "#f43f5e",
         },
         accent: {
+          gold: "#fbbf24",
           cyan: "#00f0ff",
           purple: "#9d4edd",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-jakarta)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
       },
       aspectRatio: {
         poster: "2/3",
@@ -32,4 +36,3 @@ module.exports = {
   },
   plugins: [],
 };
-

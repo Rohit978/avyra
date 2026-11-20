@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ColdStartGame from "../components/ColdStartGame";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -11,8 +19,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Cineverse — Discover Movies, TV Series & Anime",
-  description: "Unified media discovery and catalogue platform for films, episodic series, and anime with legal playback and personal watchlists.",
+  title: "CineVerse — Stream Movies, TV Series & Anime",
+  description:
+    "Luxury dark-mode cinema discovery and streaming platform for films, episodic series, and anime with personal watchlists.",
 };
 
 export default function RootLayout({
@@ -21,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-white flex flex-col justify-between">
+    <html lang="en" className={`dark ${jakarta.variable}`}>
+      <body className="min-h-screen bg-background cinema-ambient-bg text-foreground font-sans antialiased selection:bg-primary selection:text-white flex flex-col justify-between">
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
@@ -31,4 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-

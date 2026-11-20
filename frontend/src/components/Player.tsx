@@ -450,34 +450,29 @@ export default function Player({ playback }: PlayerProps) {
           isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 w-screen h-screen" : ""
         }`}
       >
-        {/* Primary Video Embed */}
+        {/* Primary Video Embed (no sandbox attribute to prevent player lockout errors) */}
         <iframe
           ref={iframeRef}
           src={activeSource.embed_url}
           title={`${playback.title} Player`}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
           referrerPolicy="origin"
-          sandbox={
-            adShieldActive && !activeSource.domain.includes("vidbolt")
-              ? "allow-scripts allow-same-origin allow-forms allow-presentation"
-              : undefined
-          }
           className="absolute inset-0 w-full h-full border-0 z-0"
           allowFullScreen
         />
 
-        {/* Double-Tap Skip Gesture Zones (Overlaid on left 35% and right 35%, leaving center 30% and bottom 70px clear for native controls) */}
+        {/* Double-Tap Skip Gesture Zones (Leaves top 56px, bottom 70px, and center 44% clear for native controls & menus) */}
         <div
           onClick={(e) => handleGestureTap("left", e)}
           onTouchEnd={(e) => handleGestureTap("left", e)}
-          className="absolute top-0 left-0 w-[35%] bottom-[70px] z-20 cursor-pointer bg-transparent transition-opacity"
+          className="absolute top-[56px] left-0 w-[28%] bottom-[70px] z-20 cursor-pointer bg-transparent transition-opacity"
           aria-label="Double tap to skip 10 seconds backward"
         />
 
         <div
           onClick={(e) => handleGestureTap("right", e)}
           onTouchEnd={(e) => handleGestureTap("right", e)}
-          className="absolute top-0 right-0 w-[35%] bottom-[70px] z-20 cursor-pointer bg-transparent transition-opacity"
+          className="absolute top-[56px] right-0 w-[28%] bottom-[70px] z-20 cursor-pointer bg-transparent transition-opacity"
           aria-label="Double tap to skip 10 seconds forward"
         />
 
@@ -642,25 +637,25 @@ export default function Player({ playback }: PlayerProps) {
                 </p>
               </div>
 
-              {/* Way 2: Browser Extension (uBlock Origin - 100% Effective) */}
+              {/* Way 2: Browser Extension (uBlock Origin Lite MV3 - 100% Effective) */}
               <div className="p-3.5 rounded-xl bg-neutral-900/70 border border-neutral-800 space-y-2.5">
                 <div className="font-bold text-white flex items-center justify-between text-sm">
-                  <span>🛡️ Way 2: Install uBlock Origin (Guaranteed Block)</span>
+                  <span>🛡️ Way 2: Install uBlock Origin Lite (uBOL)</span>
                   <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">
-                    RECOMMENDED
+                    BEST FOR CHROME
                   </span>
                 </div>
                 <p className="text-neutral-300 leading-relaxed">
-                  Browser extensions have full authority to kill hidden click overlays, popunders, and iframe trackers that regular websites cannot touch due to cross-origin restrictions.
+                  Because modern video players block <code className="text-amber-400">sandbox</code> iframes, websites cannot filter cross-origin ad scripts directly. <strong>uBlock Origin Lite</strong> uses Chrome&apos;s native Manifest V3 <code className="text-emerald-400">declarativeNetRequest</code> engine + cosmetic rules across all frames. Set its filtering mode to <strong>Optimal</strong> or <strong>Complete</strong> for zero popups.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <a
-                    href="https://chromewebstore.google.com/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm"
+                    href="https://chromewebstore.google.com/detail/ublock-origin-lite/ddkjiahejlhfcafbddmgiahcphecmpfh"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-[11px] border border-neutral-700 transition-colors flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/30 text-white font-semibold text-[11px] border border-primary/40 transition-colors flex items-center gap-1.5"
                   >
-                    <span>Get for Chrome / Edge / Brave ↗</span>
+                    <span>uBlock Origin Lite (Chrome / Edge) ↗</span>
                   </a>
                   <a
                     href="https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/"
@@ -668,7 +663,15 @@ export default function Player({ playback }: PlayerProps) {
                     rel="noopener noreferrer"
                     className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-[11px] border border-neutral-700 transition-colors flex items-center gap-1.5"
                   >
-                    <span>Get for Firefox ↗</span>
+                    <span>uBlock Origin (Firefox) ↗</span>
+                  </a>
+                  <a
+                    href="https://github.com/uBlockOrigin/uBOL-home"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white font-medium text-[11px] border border-neutral-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>GitHub (uBOL-home) ↗</span>
                   </a>
                 </div>
               </div>

@@ -17,7 +17,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const data = await searchMedia(query, page);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-8">
       {/* Search Header */}
       <div className="border-b border-surface-border pb-6">
         <h1 className="text-3xl font-black text-white tracking-tight">

@@ -30,8 +30,6 @@ class Settings(BaseSettings):
     VIDSRC_TV_URL_TEMPLATE: str = "https://vidsrc.me/embed/tv?tmdb={id}&season={s}&episode={e}"
     TWOEMBED_MOVIE_URL_TEMPLATE: str = "https://www.2embed.cc/embed/{TMDB_ID}"
     TWOEMBED_TV_URL_TEMPLATE: str = "https://www.2embed.cc/embedtv/{id}&s={s}&e={e}"
-    VIDFLIX_MOVIE_URL_TEMPLATE: str = "https://vidsrc.pm/embed/movie?tmdb={TMDB_ID}"
-    VIDFLIX_TV_URL_TEMPLATE: str = "https://vidsrc.pm/embed/tv?tmdb={id}&season={s}&episode={e}"
     VIDBOLT_MOVIE_URL_TEMPLATE: str = "https://vidbolt.xyz/movie/{TMDB_ID}"
     VIDBOLT_TV_URL_TEMPLATE: str = "https://vidbolt.xyz/tv/{id}/{s}/{e}"
     REELSDOWNLOAD_URL_TEMPLATE: str = "https://embed.reelsdownload.online/player/{TMDB_ID}?key=k_5661ac637169a1733857dc50"
@@ -40,8 +38,6 @@ class Settings(BaseSettings):
     ALLOWED_EMBED_DOMAINS: List[str] = [
         "vidlink.pro",
         "vidsrc.me",
-        "vidsrc.pm",
-        "vidsrc.to",
         "2embed.cc",
         "vidbolt.xyz",
         "embed.reelsdownload.online",

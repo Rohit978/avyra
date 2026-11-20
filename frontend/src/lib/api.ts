@@ -581,10 +581,6 @@ export async function getPlaybackOptions(
     ? `https://www.2embed.cc/embed/${resolved.tmdb_id}`
     : `https://www.2embed.cc/embedtv/${resolved.tmdb_id}&s=${sNum}&e=${epNum}`;
 
-  const vidflixUrl = isMovie
-    ? `https://vidsrc.pm/embed/movie?tmdb=${resolved.tmdb_id}`
-    : `https://vidsrc.pm/embed/tv?tmdb=${resolved.tmdb_id}&season=${sNum}&episode=${epNum}`;
-
   const reelsUrl = isMovie
     ? `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50`
     : `https://embed.reelsdownload.online/player/${resolved.tmdb_id}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`;
@@ -604,7 +600,7 @@ export async function getPlaybackOptions(
     embed_sources: [
       {
         id: "vidlink-primary",
-        name: "Server 1 (VidLink - No Ads)",
+        name: "Server 1 (VidLink HD)",
         embed_url: vidlinkUrl,
         domain: "vidlink.pro",
         is_primary: true,
@@ -624,28 +620,21 @@ export async function getPlaybackOptions(
         is_primary: false,
       },
       {
-        id: "vidflix",
-        name: "Server 4 (Vidflix)",
-        embed_url: vidflixUrl,
-        domain: "vidsrc.pm",
-        is_primary: false,
-      },
-      {
         id: "reelsdownload",
-        name: "Server 5 (Reels)",
+        name: "Server 4 (Reels)",
         embed_url: reelsUrl,
         domain: "embed.reelsdownload.online",
         is_primary: false,
       },
       {
         id: isMovie ? "vidbolt" : "vidbolt-tv",
-        name: "Server 6 (Vidbolt)",
+        name: "Server 5 (Vidbolt)",
         embed_url: vidboltUrl,
         domain: "vidbolt.xyz",
         is_primary: false,
       },
     ],
-    sandbox_policy: "allow-scripts allow-same-origin allow-forms allow-presentation",
+    sandbox_policy: "",
     referrer_policy: "origin",
   };
 

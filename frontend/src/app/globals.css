@@ -3,33 +3,58 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0c0f;
-  --foreground: #ededed;
+  --background: #07080d;
+  --foreground: #f4f4f6;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   overflow-x: hidden;
 }
 
-/* Custom scrollbar for horizontal carousels */
+/* Subtle cinema ambient radial glow at top of viewport */
+.cinema-ambient-bg {
+  background-image:
+    radial-gradient(ellipse 80% 45% at 50% -10%, rgba(225, 29, 72, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 85% 10%, rgba(251, 191, 36, 0.06), transparent 55%);
+}
+
+/* Hide scrollbars cleanly on carousels */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom subtle scrollbars */
 ::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0c0f;
+  background: #07080d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #282c37;
+  background: #232736;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f4454;
+  background: #383e54;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+}

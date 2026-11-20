@@ -110,7 +110,7 @@ export default function MediaDetailClient({
       embed_sources: [
         {
           id: "vidlink-primary",
-          name: "Server 1 (VidLink - No Ads)",
+          name: "Server 1 (VidLink HD)",
           embed_url: `https://vidlink.pro/tv/${tmdbId}/${sNum}/${epNum}?primaryColor=e11d48&secondaryColor=fbbf24`,
           domain: "vidlink.pro",
           is_primary: true,
@@ -130,22 +130,15 @@ export default function MediaDetailClient({
           is_primary: false,
         },
         {
-          id: "vidflix",
-          name: "Server 4 (Vidflix)",
-          embed_url: `https://vidsrc.pm/embed/tv?tmdb=${tmdbId}&season=${sNum}&episode=${epNum}`,
-          domain: "vidsrc.pm",
-          is_primary: false,
-        },
-        {
           id: "reelsdownload",
-          name: "Server 5 (Reels)",
+          name: "Server 4 (Reels)",
           embed_url: `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`,
           domain: "embed.reelsdownload.online",
           is_primary: false,
         },
         {
           id: "vidbolt-tv",
-          name: "Server 6 (Vidbolt)",
+          name: "Server 5 (Vidbolt)",
           embed_url: `https://vidbolt.xyz/tv/${tmdbId}/${sNum}/${epNum}`,
           domain: "vidbolt.xyz",
           is_primary: false,
