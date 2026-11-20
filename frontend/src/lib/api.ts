@@ -438,7 +438,9 @@ async function fetchCinemetaCatalog(
 
 async function fetchCinemetaMeta(id: string): Promise<CinemetaMetaItem | null> {
   if (!id.startsWith("tt")) return null;
-  for (const kind of ["movie", "series"] as const) {
+  // Query "series" FIRST: Cinemeta returns empty meta for movies on /meta/series/,
+  // whereas /meta/movie/ collides with TMDB movie IDs when given a series IMDb ID!
+  for (const kind of ["series", "movie"] as const) {
     try {
       const res = await fetch(`${CINEMETA_BASE}/meta/${kind}/${id}.json`, {
         next: { revalidate: 3600 },
