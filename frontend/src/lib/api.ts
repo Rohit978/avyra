@@ -20,6 +20,7 @@ export interface MediaSummary {
   vote_count: number;
   popularity: number;
   genres: string[];
+  trailer_key?: string | null;
 }
 
 export interface SearchSuggestion {
@@ -330,6 +331,129 @@ const MOCK_ITEMS: MediaSummary[] = [
   },
 ];
 
+const CINEMETA_BASE = "https://v3-cinemeta.strem.io";
+
+interface CinemetaMetaItem {
+  id: string;
+  imdb_id?: string;
+  moviedb_id?: number | string;
+  type?: "movie" | "series";
+  name: string;
+  poster?: string;
+  background?: string;
+  description?: string;
+  imdbRating?: string;
+  releaseInfo?: string;
+  runtime?: string;
+  genres?: string[];
+  cast?: string[];
+  director?: string[];
+  trailers?: { source: string; type?: string }[];
+  videos?: {
+    id: string;
+    name?: string;
+    title?: string;
+    season?: number;
+    episode?: number;
+    number?: number;
+    overview?: string;
+    description?: string;
+    thumbnail?: string;
+    released?: string;
+    firstAired?: string;
+  }[];
+}
+
+function mapCinemetaToSummary(
+  m: CinemetaMetaItem,
+  forcedType?: "MOVIE" | "TV_SHOW"
+): MediaSummary {
+  const rating = parseFloat(m.imdbRating || "0");
+  const isSeries = forcedType === "TV_SHOW" || m.type === "series";
+  const yearMatch = (m.releaseInfo || "").match(/\d{4}/);
+  const releaseDate = yearMatch ? `${yearMatch[0]}-01-01` : null;
+  const genres = Array.isArray(m.genres) && m.genres.length > 0 ? m.genres : [];
+  const isAnime =
+    isSeries &&
+    genres.some((g) => g.toLowerCase() === "animation");
+
+  return {
+    id: m.id || m.imdb_id || "",
+    title: m.name || "Untitled",
+    original_title: m.name || "Untitled",
+    media_type: isAnime ? "ANIME" : isSeries ? "TV_SHOW" : "MOVIE",
+    status: "RELEASED",
+    overview: m.description || null,
+    release_date: releaseDate,
+    poster_url:
+      m.poster ||
+      (m.id?.startsWith("tt")
+        ? `https://images.metahub.space/poster/small/${m.id}/img`
+        : null),
+    backdrop_url:
+      m.background ||
+      (m.id?.startsWith("tt")
+        ? `https://images.metahub.space/background/medium/${m.id}/img`
+        : null),
+    vote_average: Number.isFinite(rating) ? rating : 0,
+    vote_count: 5000,
+    popularity: Number.isFinite(rating) ? rating * 15 : 80,
+    genres,
+    trailer_key: m.trailers?.[0]?.source || null,
+  };
+}
+
+async function fetchCinemetaCatalog(
+  type: "movie" | "series",
+  catalog: "top" | "imdbRating",
+  options?: { search?: string; genre?: string; skip?: number }
+): Promise<MediaSummary[]> {
+  try {
+    const extraParts: string[] = [];
+    if (options?.search) {
+      extraParts.push(`search=${encodeURIComponent(options.search)}`);
+    } else {
+      if (options?.genre) {
+        extraParts.push(`genre=${encodeURIComponent(options.genre)}`);
+      }
+      if (options?.skip && options.skip > 0) {
+        extraParts.push(`skip=${options.skip}`);
+      }
+    }
+    const extraPath = extraParts.length > 0 ? `/${extraParts.join("&")}` : "";
+    const path = `${CINEMETA_BASE}/catalog/${type}/${catalog}${extraPath}.json`;
+    const res = await fetch(path, {
+      next: { revalidate: 1800 },
+    } as RequestInit);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const metas: CinemetaMetaItem[] = Array.isArray(data?.metas) ? data.metas : [];
+    return metas
+      .filter((m) => m && m.id && m.name)
+      .map((m) => mapCinemetaToSummary(m, type === "series" ? "TV_SHOW" : "MOVIE"));
+  } catch {
+    return [];
+  }
+}
+
+async function fetchCinemetaMeta(id: string): Promise<CinemetaMetaItem | null> {
+  if (!id.startsWith("tt")) return null;
+  for (const kind of ["movie", "series"] as const) {
+    try {
+      const res = await fetch(`${CINEMETA_BASE}/meta/${kind}/${id}.json`, {
+        next: { revalidate: 3600 },
+      } as RequestInit);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.meta?.name) {
+          return { ...data.meta, type: data.meta.type || kind };
+        }
+      }
+    } catch {}
+  }
+  return null;
+}
+
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
   if (
     !url ||
@@ -351,6 +475,54 @@ export async function getCuratedCollection(
   collection: "trending" | "popular" | "top-rated" | "upcoming",
   mediaType?: string
 ): Promise<MediaSummary[]> {
+  // Fetch live, current real-time catalogs from Cinemeta (cached 30 min via ISR)
+  try {
+    if (collection === "top-rated") {
+      if (mediaType === "TV_SHOW") {
+        const series = await fetchCinemetaCatalog("series", "imdbRating");
+        const rated = series
+          .filter((s) => s.vote_average >= 7.5)
+          .sort((a, b) => b.vote_average - a.vote_average);
+        if (rated.length > 0) return rated.slice(0, 20);
+      } else {
+        const movies = await fetchCinemetaCatalog("movie", "imdbRating");
+        const rated = movies
+          .filter((m) => m.vote_average >= 7.5)
+          .sort((a, b) => b.vote_average - a.vote_average);
+        if (rated.length > 0) return rated.slice(0, 20);
+      }
+    }
+
+    if (collection === "trending") {
+      const [movies, series] = await Promise.all([
+        fetchCinemetaCatalog("movie", "top"),
+        fetchCinemetaCatalog("series", "top"),
+      ]);
+      const merged: MediaSummary[] = [];
+      const maxLen = Math.max(movies.length, series.length);
+      for (let i = 0; i < Math.min(maxLen, 14); i++) {
+        if (movies[i]) merged.push(movies[i]);
+        if (series[i]) merged.push(series[i]);
+      }
+      if (merged.length > 0) return merged.slice(0, 24);
+    }
+
+    if (collection === "popular") {
+      if (mediaType === "MOVIE") {
+        const movies = await fetchCinemetaCatalog("movie", "top");
+        if (movies.length > 0) return movies.slice(0, 30);
+      } else if (mediaType === "TV_SHOW") {
+        const series = await fetchCinemetaCatalog("series", "top");
+        if (series.length > 0) return series.slice(0, 30);
+      } else if (mediaType === "ANIME") {
+        const anime = await fetchCinemetaCatalog("series", "top", { genre: "Animation" });
+        if (anime.length > 0) return anime.slice(0, 24);
+      }
+    }
+  } catch {
+    // Fallback below if offline
+  }
+
   const query = mediaType ? `?media_type=${mediaType}` : "";
   const filteredMock = mediaType
     ? MOCK_ITEMS.filter((i) => i.media_type === mediaType)
@@ -375,6 +547,59 @@ export async function browseMedia(params: {
   page?: number;
   limit?: number;
 }): Promise<PaginatedMedia> {
+  // Deep live pagination via Cinemeta skip= & genre= (thousands of movies, series, and anime)
+  try {
+    const page = params.page || 1;
+    const limit = params.limit || 48;
+    const skip = (page - 1) * 50;
+    const catalogKind: "top" | "imdbRating" =
+      params.sort_by === "rating" ? "imdbRating" : "top";
+
+    let live: MediaSummary[] = [];
+    if (params.media_type === "MOVIE") {
+      live = await fetchCinemetaCatalog("movie", catalogKind, {
+        genre: params.genre,
+        skip,
+      });
+    } else if (params.media_type === "TV_SHOW") {
+      live = await fetchCinemetaCatalog("series", catalogKind, {
+        genre: params.genre,
+        skip,
+      });
+    } else if (params.media_type === "ANIME") {
+      const [animSeries, animMovies] = await Promise.all([
+        fetchCinemetaCatalog("series", catalogKind, { genre: "Animation", skip }),
+        fetchCinemetaCatalog("movie", catalogKind, { genre: "Animation", skip }),
+      ]);
+      const merged: MediaSummary[] = [];
+      const maxLen = Math.max(animSeries.length, animMovies.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (animSeries[i]) merged.push(animSeries[i]);
+        if (animMovies[i]) merged.push(animMovies[i]);
+      }
+      live = merged;
+    } else {
+      const [m, s] = await Promise.all([
+        fetchCinemetaCatalog("movie", catalogKind, { genre: params.genre, skip }),
+        fetchCinemetaCatalog("series", catalogKind, { genre: params.genre, skip }),
+      ]);
+      live = [...m.slice(0, 24), ...s.slice(0, 24)];
+    }
+
+    if (params.year) {
+      live = live.filter((i) => i.release_date?.startsWith(String(params.year)));
+    }
+    if (live.length > 0) {
+      return {
+        items: live.slice(0, limit),
+        page,
+        limit,
+        total: 1000,
+        total_pages: 20,
+      };
+    }
+  } catch {}
+
   const searchParams = new URLSearchParams();
   if (params.media_type) searchParams.set("media_type", params.media_type);
   if (params.genre) searchParams.set("genre", params.genre);
@@ -401,6 +626,23 @@ export async function searchMedia(query: string, page = 1): Promise<PaginatedMed
   if (!query.trim()) {
     return { items: [], page: 1, limit: 20, total: 0, total_pages: 0 };
   }
+  try {
+    const [movies, series] = await Promise.all([
+      fetchCinemetaCatalog("movie", "top", { search: query.trim() }),
+      fetchCinemetaCatalog("series", "top", { search: query.trim() }),
+    ]);
+    const combined = [...movies.slice(0, 18), ...series.slice(0, 18)];
+    if (combined.length > 0) {
+      return {
+        items: combined,
+        page,
+        limit: 36,
+        total: combined.length,
+        total_pages: 1,
+      };
+    }
+  } catch {}
+
   return safeFetch<PaginatedMedia>(
     `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&page=${page}`,
     {
@@ -417,6 +659,24 @@ export async function searchMedia(query: string, page = 1): Promise<PaginatedMed
 
 export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
   if (!query.trim()) return [];
+  try {
+    const [movies, series] = await Promise.all([
+      fetchCinemetaCatalog("movie", "top", { search: query.trim() }),
+      fetchCinemetaCatalog("series", "top", { search: query.trim() }),
+    ]);
+    const combined = [...movies.slice(0, 5), ...series.slice(0, 5)];
+    if (combined.length > 0) {
+      return combined.map((i) => ({
+        id: i.id,
+        title: i.title,
+        media_type: i.media_type,
+        release_date: i.release_date,
+        poster_url: i.poster_url,
+        vote_average: i.vote_average,
+      }));
+    }
+  } catch {}
+
   return safeFetch<SearchSuggestion[]>(
     `${API_BASE_URL}/search/suggestions?q=${encodeURIComponent(query)}&limit=6`,
     MOCK_ITEMS.filter((i) =>
@@ -468,6 +728,38 @@ function resolveTmdbId(id: string): { tmdb_id: string; title: string; media_type
 }
 
 export async function getMediaDetail(id: string): Promise<MediaDetail | null> {
+  if (id.startsWith("tt")) {
+    const meta = await fetchCinemetaMeta(id);
+    if (meta) {
+      const summary = mapCinemetaToSummary(
+        meta,
+        meta.type === "series" ? "TV_SHOW" : "MOVIE"
+      );
+      const runtimeMatch = (meta.runtime || "").match(/\d+/);
+      const seasonSet = new Set(
+        (meta.videos || [])
+          .map((v) => v.season)
+          .filter((s): s is number => typeof s === "number" && s > 0)
+      );
+      const provenance = [];
+      if (meta.moviedb_id) {
+        provenance.push({ provider: "tmdb", external_id: String(meta.moviedb_id) });
+      }
+      provenance.push({ provider: "imdb", external_id: id });
+      return {
+        ...summary,
+        runtime: runtimeMatch ? parseInt(runtimeMatch[0], 10) : summary.media_type === "MOVIE" ? 125 : 50,
+        original_language: "en",
+        country_of_origin: "US",
+        is_adult: false,
+        titles: [{ title: summary.title, title_type: "primary", language: "en" }],
+        provenance,
+        season_count: seasonSet.size,
+        episode_count: (meta.videos || []).filter((v) => (v.season || 0) > 0).length,
+      };
+    }
+  }
+
   const item = MOCK_ITEMS.find((m) => m.id === id) || MOCK_HERO;
   const resolved = resolveTmdbId(id);
   const fallback: MediaDetail = {
@@ -486,6 +778,30 @@ export async function getMediaDetail(id: string): Promise<MediaDetail | null> {
 }
 
 export async function getMediaCredits(id: string): Promise<MediaCredits> {
+  if (id.startsWith("tt")) {
+    const meta = await fetchCinemetaMeta(id);
+    if (meta && (meta.cast?.length || meta.director?.length)) {
+      return {
+        cast: (meta.cast || []).slice(0, 10).map((name, idx) => ({
+          id: `cast-${id}-${idx}`,
+          person_id: `p-${idx}`,
+          name,
+          character_name: idx === 0 ? "Lead Role" : "Cast",
+          profile_path: null,
+          order: idx,
+        })),
+        crew: (meta.director || []).map((name, idx) => ({
+          id: `crew-${id}-${idx}`,
+          person_id: `d-${idx}`,
+          name,
+          department: "Directing",
+          job: "Director",
+          profile_path: null,
+        })),
+      };
+    }
+  }
+
   const resolved = resolveTmdbId(id);
   return safeFetch<MediaCredits>(`${API_BASE_URL}/media/${id}/credits`, {
     cast: [
@@ -520,6 +836,42 @@ export async function getMediaCredits(id: string): Promise<MediaCredits> {
 }
 
 export async function getMediaSeasons(id: string): Promise<SeasonDetail[]> {
+  if (id.startsWith("tt")) {
+    const meta = await fetchCinemetaMeta(id);
+    if (meta?.videos && meta.videos.length > 0) {
+      const grouped = new Map<number, Episode[]>();
+      for (const v of meta.videos) {
+        const sNum = v.season || 0;
+        const epNum = v.episode || v.number || 0;
+        if (sNum <= 0 || epNum <= 0) continue;
+        if (!grouped.has(sNum)) grouped.set(sNum, []);
+        grouped.get(sNum)!.push({
+          id: v.id || `${id}-${sNum}-${epNum}`,
+          season_id: `${id}-s${sNum}`,
+          media_id: id,
+          episode_number: epNum,
+          title: v.name || v.title || `Episode ${epNum}`,
+          overview: v.overview || v.description || null,
+          still_path: v.thumbnail || null,
+          air_date: (v.released || v.firstAired || "").slice(0, 10) || null,
+          runtime: null,
+        });
+      }
+      return Array.from(grouped.entries())
+        .sort((a, b) => a[0] - b[0])
+        .map(([seasonNumber, eps]) => ({
+          id: `${id}-season-${seasonNumber}`,
+          season_number: seasonNumber,
+          title: `Season ${seasonNumber}`,
+          overview: null,
+          poster_path: meta.poster || null,
+          air_date: eps[0]?.air_date || null,
+          episode_count: eps.length,
+          episodes: eps.sort((a, b) => a.episode_number - b.episode_number),
+        }));
+    }
+  }
+
   const summaries = await safeFetch<SeasonDetail[]>(
     `${API_BASE_URL}/media/${id}/seasons`,
     []
@@ -563,11 +915,88 @@ export async function getPlaybackOptions(
   if (episode) query.push(`episode=${episode}`);
   const qStr = query.length > 0 ? `?${query.join("&")}` : "";
 
+  const sNum = season || 1;
+  const epNum = episode || 1;
+
+  // Live Cinemeta tt... title playback resolution
+  if (id.startsWith("tt")) {
+    const meta = await fetchCinemetaMeta(id);
+    const isMovie = meta?.type !== "series";
+    const tmdbId = meta?.moviedb_id ? String(meta.moviedb_id) : null;
+    const title = meta?.name || "Featured Stream";
+
+    const sources = [];
+    if (tmdbId) {
+      sources.push({
+        id: "vidlink-primary",
+        name: "Server 1 (VidLink HD)",
+        embed_url: isMovie
+          ? `https://vidlink.pro/movie/${tmdbId}?primaryColor=e11d48&secondaryColor=fbbf24`
+          : `https://vidlink.pro/tv/${tmdbId}/${sNum}/${epNum}?primaryColor=e11d48&secondaryColor=fbbf24`,
+        domain: "vidlink.pro",
+        is_primary: true,
+      });
+    }
+    sources.push({
+      id: "vidsrc",
+      name: tmdbId ? "Server 2 (VidSrc)" : "Server 1 (VidSrc HD)",
+      embed_url: isMovie
+        ? tmdbId
+          ? `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`
+          : `https://vidsrc.me/embed/movie?imdb=${id}`
+        : tmdbId
+        ? `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${sNum}&episode=${epNum}`
+        : `https://vidsrc.me/embed/tv?imdb=${id}&season=${sNum}&episode=${epNum}`,
+      domain: "vidsrc.me",
+      is_primary: !tmdbId,
+    });
+    sources.push({
+      id: "2embed",
+      name: "Server 3 (2Embed HD)",
+      embed_url: isMovie
+        ? `https://www.2embed.cc/embed/${tmdbId || id}`
+        : `https://www.2embed.cc/embedtv/${tmdbId || id}&s=${sNum}&e=${epNum}`,
+      domain: "2embed.cc",
+      is_primary: false,
+    });
+    if (tmdbId) {
+      sources.push({
+        id: "reelsdownload",
+        name: "Server 4 (Reels)",
+        embed_url: isMovie
+          ? `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50`
+          : `https://embed.reelsdownload.online/player/${tmdbId}?key=k_5661ac637169a1733857dc50&s=${sNum}&e=${epNum}`,
+        domain: "embed.reelsdownload.online",
+        is_primary: false,
+      });
+      sources.push({
+        id: isMovie ? "vidbolt" : "vidbolt-tv",
+        name: "Server 5 (Vidbolt)",
+        embed_url: isMovie
+          ? `https://vidbolt.xyz/movie/${tmdbId}`
+          : `https://vidbolt.xyz/tv/${tmdbId}/${sNum}/${epNum}`,
+        domain: "vidbolt.xyz",
+        is_primary: false,
+      });
+    }
+
+    return {
+      media_id: id,
+      media_type: isMovie ? "MOVIE" : "TV_SHOW",
+      title,
+      has_stream: true,
+      tmdb_id: tmdbId,
+      season_number: isMovie ? null : sNum,
+      episode_number: isMovie ? null : epNum,
+      embed_sources: sources,
+      sandbox_policy: "",
+      referrer_policy: "origin",
+    };
+  }
+
   const resolved = resolveTmdbId(id);
   const item = MOCK_ITEMS.find((m) => m.id === id) || MOCK_HERO;
   const isMovie = item.media_type === "MOVIE";
-  const sNum = season || 1;
-  const epNum = episode || 1;
 
   const vidlinkUrl = isMovie
     ? `https://vidlink.pro/movie/${resolved.tmdb_id}?primaryColor=e11d48&secondaryColor=fbbf24`

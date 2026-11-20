@@ -35,6 +35,7 @@ export default function Player({ playback }: PlayerProps) {
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [cinemaMode, setCinemaMode] = useState(false);
   const [adShieldActive, setAdShieldActive] = useState(true);
   const [showAdBlockModal, setShowAdBlockModal] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -405,6 +406,20 @@ export default function Player({ playback }: PlayerProps) {
             </svg>
           </button>
 
+          {/* Cinema Mode (Lights Out) Toggle */}
+          <button
+            onClick={() => setCinemaMode((prev) => !prev)}
+            title="Dim the room around the player (Lights Out)"
+            className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1 active:scale-95 ${
+              cinemaMode
+                ? "bg-amber-500/20 border-amber-400/50 text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.25)]"
+                : "bg-surface-elevated hover:bg-neutral-800 text-neutral-300 hover:text-white border-surface-border"
+            }`}
+          >
+            <span>🌙</span>
+            <span className="hidden sm:inline">{cinemaMode ? "Lights On" : "Cinema"}</span>
+          </button>
+
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen (Auto Landscape)"}
@@ -443,11 +458,24 @@ export default function Player({ playback }: PlayerProps) {
         </div>
       </div>
 
+      {/* Cinema Mode Backdrop Overlay */}
+      {cinemaMode && (
+        <div
+          onClick={() => setCinemaMode(false)}
+          className="fixed inset-0 z-40 bg-black/95 backdrop-blur-sm transition-opacity duration-300 cursor-pointer"
+          aria-label="Exit Cinema Mode"
+        />
+      )}
+
       {/* Video Player Container */}
       <div
         ref={containerRef}
-        className={`relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-neutral-800 shadow-2xl group select-none ${
-          isFullscreen ? "fixed inset-0 z-50 rounded-none border-0 w-screen h-screen" : ""
+        className={`relative w-full aspect-video bg-black rounded-xl overflow-hidden border transition-all duration-300 group select-none ${
+          isFullscreen
+            ? "fixed inset-0 z-50 rounded-none border-0 w-screen h-screen"
+            : cinemaMode
+            ? "z-50 border-primary/40 shadow-[0_0_90px_rgba(225,29,72,0.35),0_0_140px_rgba(251,191,36,0.12)]"
+            : "border-neutral-800 shadow-2xl"
         }`}
       >
         {/* Primary Video Embed (no sandbox attribute to prevent player lockout errors) */}

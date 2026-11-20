@@ -198,16 +198,15 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Glowing Arcade Button */}
+            {/* Cmd+K Spotlight Trigger */}
             <button
               onClick={() =>
-                window.dispatchEvent(new CustomEvent("open-cineverse-game"))
+                window.dispatchEvent(new CustomEvent("open-command-palette"))
               }
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-primary/20 via-rose-500/20 to-amber-500/20 hover:from-primary/35 hover:to-amber-500/35 text-xs font-bold text-white border border-rose-500/40 shadow-[0_0_20px_rgba(225,29,72,0.25)] transition-all hover:scale-105 active:scale-95"
-              title="Play Popcorn Catcher Arcade Mini-Game"
+              title="Open Spotlight Search (Ctrl+K or /)"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.11] border border-white/[0.09] text-xs font-semibold text-neutral-300 hover:text-white transition-all shrink-0"
             >
-              <span>🍿</span>
-              <span className="hidden sm:inline">Arcade</span>
+              <span className="text-[11px] font-mono text-neutral-400">⌘K</span>
             </button>
 
             {/* Mobile Menu Button */}

@@ -1,57 +1,23 @@
 import React from "react";
-import MediaCard from "../../components/MediaCard";
+import CatalogGridClient from "../../components/CatalogGridClient";
 import { browseMedia } from "../../lib/api";
 
-interface AnimePageProps {
-  searchParams: Promise<{
-    genre?: string;
-    year?: string;
-    sort_by?: string;
-    page?: string;
-  }>;
-}
+export const revalidate = 1800;
 
-export default async function AnimePage({ searchParams }: AnimePageProps) {
-  const params = await searchParams;
-  const page = params.page ? parseInt(params.page, 10) : 1;
-  const year = params.year ? parseInt(params.year, 10) : undefined;
-
+export default async function AnimePage() {
   const data = await browseMedia({
     media_type: "ANIME",
-    genre: params.genre,
-    year: year,
-    sort_by: params.sort_by || "popularity",
-    page: page,
-    limit: 24,
+    sort_by: "popularity",
+    page: 1,
+    limit: 48,
   });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-8">
-      {/* Page Header */}
-      <div className="border-b border-surface-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Anime</h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            Discover Japanese animation, seasonal broadcasts, and classic sagas.
-          </p>
-        </div>
-        <div className="text-xs text-neutral-400 bg-surface-elevated px-3 py-1.5 rounded-full border border-surface-border w-fit">
-          Showing {data.items.length} anime
-        </div>
-      </div>
-
-      {/* Grid */}
-      {data.items.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
-          {data.items.map((item) => (
-            <MediaCard key={item.id} media={item} />
-          ))}
-        </div>
-      ) : (
-        <div className="py-20 text-center text-neutral-500">
-          <p className="text-lg">No anime titles found matching the selected criteria.</p>
-        </div>
-      )}
-    </div>
+    <CatalogGridClient
+      title="Anime & Animation"
+      description="Stream trending Japanese anime series, acclaimed animated films, and classic sagas."
+      mediaType="ANIME"
+      initialItems={data.items}
+    />
   );
 }
