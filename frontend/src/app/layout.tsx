@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "googlefff92483144c2e0e",
+    google: "3mb4HohNQzd-3XHUd7Vg-PJlimlDfRAZbDcCQx6X-qw",
   },
 };
 
@@ -96,6 +96,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${jakarta.variable}`}>
       <head>
+        <meta
+          name="google-site-verification"
+          content="3mb4HohNQzd-3XHUd7Vg-PJlimlDfRAZbDcCQx6X-qw"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
