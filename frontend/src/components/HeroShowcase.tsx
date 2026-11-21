@@ -3,6 +3,13 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { MediaSummary } from "../lib/api";
+import {
+  AUTH_EVENT,
+  getWatchlist,
+  pullAccountSync,
+  SYNC_EVENT,
+  toggleWatchlistItem,
+} from "../lib/sync";
 
 interface HeroShowcaseProps {
   media?: MediaSummary;
@@ -27,15 +34,20 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
   const current = slides[activeIndex] || slides[0];
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
-      if (raw) {
-        const parsed: MediaSummary[] = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setSavedIds(parsed.map((i) => i.id));
-        }
-      }
-    } catch {}
+    const refresh = () => {
+      setSavedIds(getWatchlist().map((i) => i.id));
+    };
+    refresh();
+    pullAccountSync();
+
+    window.addEventListener(SYNC_EVENT, refresh);
+    window.addEventListener(AUTH_EVENT, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(SYNC_EVENT, refresh);
+      window.removeEventListener(AUTH_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
   }, []);
 
   // Auto-advance featured hero every 9 seconds (paused while trailer modal is open)
@@ -54,16 +66,8 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
   const bloomClass = ACCENT_BLOOMS[activeIndex % ACCENT_BLOOMS.length];
 
   const toggleMyList = () => {
-    try {
-      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
-      const list: MediaSummary[] = raw ? JSON.parse(raw) : [];
-      const exists = list.some((m) => m.id === current.id);
-      const next = exists
-        ? list.filter((m) => m.id !== current.id)
-        : [current, ...list];
-      localStorage.setItem("avyra_watchlist", JSON.stringify(next));
-      setSavedIds(next.map((m) => m.id));
-    } catch {}
+    toggleWatchlistItem(current);
+    setSavedIds(getWatchlist().map((m) => m.id));
   };
 
   return (

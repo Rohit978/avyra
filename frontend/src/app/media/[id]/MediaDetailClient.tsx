@@ -3,6 +3,14 @@
 import React, { useEffect, useState } from "react";
 import Player, { PlaybackOptions } from "../../../components/Player";
 import { CastMember, CrewMember, MediaDetail, SeasonDetail } from "../../../lib/api";
+import {
+  AUTH_EVENT,
+  getWatchlist,
+  pullAccountSync,
+  recordContinueWatching,
+  SYNC_EVENT,
+  toggleWatchlistItem,
+} from "../../../lib/sync";
 
 interface MediaDetailClientProps {
   media: MediaDetail;
@@ -81,29 +89,38 @@ export default function MediaDetailClient({
   const [currentPlayback, setCurrentPlayback] = useState<PlaybackOptions>(initialPlayback);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
 
-  // Auto-record watched title & exact episode to Continue Watching
+  // Sync watchlist membership with active account
   useEffect(() => {
-    try {
-      const key = "avyra_continue_watching";
-      const raw = localStorage.getItem(key);
-      const list = raw ? JSON.parse(raw) : [];
-      const filtered = Array.isArray(list)
-        ? list.filter((i: { id: string }) => i.id !== media.id)
-        : [];
-      const entry = {
-        id: media.id,
-        title: media.title,
-        media_type: media.media_type,
-        backdrop_url: media.backdrop_url ?? media.poster_url ?? null,
-        poster_url: media.poster_url ?? null,
-        progress: media.media_type === "MOVIE" ? 35 : 45,
-        subtitle:
-          media.media_type === "MOVIE"
-            ? `${media.runtime || 120}m • In Progress`
-            : `S${selectedSeasonNumber} • E${selectedEpisodeNumber} • Watching`,
-      };
-      localStorage.setItem(key, JSON.stringify([entry, ...filtered].slice(0, 10)));
-    } catch {}
+    const syncWatchlistState = () => {
+      setIsInWatchlist(getWatchlist().some((i) => i.id === media.id));
+    };
+    syncWatchlistState();
+    pullAccountSync();
+
+    window.addEventListener(SYNC_EVENT, syncWatchlistState);
+    window.addEventListener(AUTH_EVENT, syncWatchlistState);
+    window.addEventListener("storage", syncWatchlistState);
+    return () => {
+      window.removeEventListener(SYNC_EVENT, syncWatchlistState);
+      window.removeEventListener(AUTH_EVENT, syncWatchlistState);
+      window.removeEventListener("storage", syncWatchlistState);
+    };
+  }, [media.id]);
+
+  // Auto-record watched title & exact episode to Continue Watching (synced to account)
+  useEffect(() => {
+    recordContinueWatching({
+      id: media.id,
+      title: media.title,
+      media_type: media.media_type,
+      backdrop_url: media.backdrop_url ?? media.poster_url ?? null,
+      poster_url: media.poster_url ?? null,
+      progress: media.media_type === "MOVIE" ? 35 : 45,
+      subtitle:
+        media.media_type === "MOVIE"
+          ? `${media.runtime || 120}m • In Progress`
+          : `S${selectedSeasonNumber} • E${selectedEpisodeNumber} • Watching`,
+    });
   }, [media.id, media.title, media.media_type, media.backdrop_url, media.poster_url, media.runtime, selectedSeasonNumber, selectedEpisodeNumber]);
 
   const currentSeason =
@@ -274,7 +291,7 @@ export default function MediaDetailClient({
               </button>
 
               <button
-                onClick={() => setIsInWatchlist(!isInWatchlist)}
+                onClick={() => setIsInWatchlist(toggleWatchlistItem(media))}
                 className={`text-sm font-semibold px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2 ${
                   isInWatchlist
                     ? "bg-emerald-950/60 border-emerald-500/50 text-emerald-300"

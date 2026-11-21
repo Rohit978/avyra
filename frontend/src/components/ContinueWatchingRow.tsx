@@ -3,16 +3,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MediaSummary } from "../lib/api";
+import {
+  AUTH_EVENT,
+  ContinueWatchingItem,
+  getContinueWatching,
+  pullAccountSync,
+  SYNC_EVENT,
+} from "../lib/sync";
 
-export interface ContinueWatchingItem {
-  id: string;
-  title: string;
-  media_type: string;
-  backdrop_url: string | null;
-  poster_url: string | null;
-  progress: number; // 0 to 100
-  subtitle: string;
-}
+export type { ContinueWatchingItem };
 
 interface ContinueWatchingRowProps {
   fallbackItems: MediaSummary[];
@@ -24,32 +23,40 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("avyra_continue_watching") || localStorage.getItem("cineverse_continue_watching");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setItems(parsed);
-          return;
-        }
+    const refresh = () => {
+      const saved = getContinueWatching();
+      if (saved.length > 0) {
+        setItems(saved);
+        return;
       }
-    } catch { }
 
-    // Seed with sleek curated preview items so the row looks alive immediately
-    const demoProgress = [68, 34, 82, 47, 21];
-    const seeded: ContinueWatchingItem[] = fallbackItems.slice(0, 5).map((m, idx) => ({
-      id: m.id,
-      title: m.title,
-      media_type: m.media_type,
-      backdrop_url: m.backdrop_url ?? m.poster_url ?? null,
-      poster_url: m.poster_url ?? null,
-      progress: demoProgress[idx % demoProgress.length],
-      subtitle:
-        m.media_type === "MOVIE"
-          ? `${45 + idx * 18}m left`
-          : `S1 • E${idx + 1} • ${22 + idx * 5}m left`,
-    }));
-    setItems(seeded);
+      const demoProgress = [68, 34, 82, 47, 21];
+      const seeded: ContinueWatchingItem[] = fallbackItems.slice(0, 5).map((m, idx) => ({
+        id: m.id,
+        title: m.title,
+        media_type: m.media_type,
+        backdrop_url: m.backdrop_url ?? m.poster_url ?? null,
+        poster_url: m.poster_url ?? null,
+        progress: demoProgress[idx % demoProgress.length],
+        subtitle:
+          m.media_type === "MOVIE"
+            ? `${45 + idx * 18}m left`
+            : `S1 • E${idx + 1} • ${22 + idx * 5}m left`,
+      }));
+      setItems(seeded);
+    };
+
+    refresh();
+    pullAccountSync();
+
+    window.addEventListener(SYNC_EVENT, refresh);
+    window.addEventListener(AUTH_EVENT, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(SYNC_EVENT, refresh);
+      window.removeEventListener(AUTH_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
   }, [fallbackItems]);
 
   const scroll = (dir: "left" | "right") => {
@@ -61,7 +68,6 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
 
   return (
     <section className="w-full my-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 px-4 sm:px-6 lg:px-8 max-w-[1440px] mx-auto">
         <h2 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
           <span className="w-1 h-6 bg-gradient-to-b from-primary to-amber-400 rounded-full inline-block shadow-[0_0_12px_rgba(225,29,72,0.7)]" />
@@ -90,7 +96,6 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
         </div>
       </div>
 
-      {/* Landscape 16:9 Cards */}
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto scrollbar-none px-4 sm:px-6 lg:px-8 pb-4 max-w-[1440px] mx-auto scroll-smooth"
@@ -126,10 +131,8 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
                   </div>
                 )}
 
-                {/* Cinematic Bottom Fade */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#07080d] via-[#07080d]/25 to-transparent" />
 
-                {/* Center Play Pill on Hover */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="w-12 h-12 rounded-full bg-primary/90 backdrop-blur-md text-white flex items-center justify-center shadow-[0_0_24px_rgba(225,29,72,0.75)] scale-90 group-hover:scale-100 transition-transform">
                     <svg className="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24">
@@ -138,7 +141,6 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
                   </div>
                 </div>
 
-                {/* Title & Time Left */}
                 <div className="absolute bottom-3 left-3.5 right-3.5 flex items-end justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-white truncate drop-shadow">
@@ -153,7 +155,6 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
                   </span>
                 </div>
 
-                {/* Crimson Progress Bar along Bottom Edge */}
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/15">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-amber-400 shadow-[0_0_10px_rgba(225,29,72,0.9)]"

@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  applyCloudSyncData,
+  AUTH_EVENT,
+  AvyraUser,
+  SYNC_EVENT,
+} from "../../lib/sync";
 
-export interface AvyraUser {
-  name: string;
-  email: string;
-  createdAt: string;
-}
+export type { AvyraUser };
 
 export default function SignInPage() {
   const router = useRouter();
@@ -32,7 +34,8 @@ export default function SignInPage() {
   const completeSignIn = (user: AvyraUser) => {
     try {
       localStorage.setItem("avyra_user", JSON.stringify(user));
-      window.dispatchEvent(new CustomEvent("avyra-auth-change"));
+      window.dispatchEvent(new CustomEvent(AUTH_EVENT));
+      window.dispatchEvent(new CustomEvent(SYNC_EVENT));
     } catch {}
     router.push("/");
   };
@@ -53,9 +56,40 @@ export default function SignInPage() {
 
     setSubmitting(true);
     try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: mode,
+          name: name.trim(),
+          email: trimmedEmail,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.user) {
+        applyCloudSyncData(
+          data.user.email,
+          data.watchlist || [],
+          data.continueWatching || []
+        );
+        completeSignIn(data.user);
+        return;
+      }
+
+      if (res.status !== 503 && !data.fallback) {
+        setError(data.error || "Authentication failed.");
+        return;
+      }
+
+      // Local fallback only when database env is unconfigured
       const accountsRaw = localStorage.getItem("avyra_accounts");
-      const accounts: Record<string, { name: string; email: string; password: string; createdAt: string }> =
-        accountsRaw ? JSON.parse(accountsRaw) : {};
+      const accounts: Record<
+        string,
+        { name: string; email: string; password: string; createdAt: string }
+      > = accountsRaw ? JSON.parse(accountsRaw) : {};
 
       if (mode === "signup") {
         const displayName = name.trim() || trimmedEmail.split("@")[0];
@@ -76,7 +110,6 @@ export default function SignInPage() {
         const existing = accounts[trimmedEmail];
         if (existing && existing.password !== password) {
           setError("Incorrect password for this account.");
-          setSubmitting(false);
           return;
         }
         const resolvedName = existing?.name || trimmedEmail.split("@")[0];
@@ -96,15 +129,47 @@ export default function SignInPage() {
           createdAt,
         });
       }
+    } catch {
+      setError("Network error while signing in. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleDemoSignIn = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "demo", email: "member@avyra.app" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        applyCloudSyncData(
+          data.user.email,
+          data.watchlist || [],
+          data.continueWatching || []
+        );
+        completeSignIn(data.user);
+        return;
+      }
+    } catch {}
+
+    completeSignIn({
+      name: "Cinema Member",
+      email: "member@avyra.app",
+      createdAt: new Date().toISOString(),
+    });
+    setSubmitting(false);
+  };
+
   const handleSignOut = () => {
     try {
       localStorage.removeItem("avyra_user");
-      window.dispatchEvent(new CustomEvent("avyra-auth-change"));
+      window.dispatchEvent(new CustomEvent(AUTH_EVENT));
+      window.dispatchEvent(new CustomEvent(SYNC_EVENT));
       setCurrentUser(null);
     } catch {}
   };
@@ -124,9 +189,12 @@ export default function SignInPage() {
               <p className="text-sm text-neutral-400 mt-1">{currentUser.email}</p>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.07] text-xs text-neutral-300 text-left space-y-1.5">
-              <div className="font-bold text-white">Account Sync Enabled</div>
+              <div className="font-bold text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                Cloud Account Sync Active
+              </div>
               <p className="text-neutral-400 leading-relaxed">
-                Your personal Watchlist, Continue Watching episode progress, and preferred streaming server are linked to your Avyra profile.
+                Your personal Watchlist and Continue Watching episode progress automatically sync across all browsers and devices signed in to {currentUser.email}.
               </p>
             </div>
             <div className="flex flex-col gap-2.5">
@@ -146,7 +214,6 @@ export default function SignInPage() {
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="text-center space-y-1.5">
               <Link href="/" className="inline-block text-2xl font-extrabold tracking-tight text-white">
                 AVY<span className="text-primary">RA</span>
@@ -155,11 +222,10 @@ export default function SignInPage() {
                 {mode === "signin" ? "Welcome back" : "Create your Avyra account"}
               </h1>
               <p className="text-xs text-neutral-400">
-                Save your watchlist, track episodes across sessions, and customize playback.
+                Sync your watchlist and episode progress across any device.
               </p>
             </div>
 
-            {/* Mode Switch Tabs */}
             <div className="grid grid-cols-2 p-1 rounded-xl bg-white/[0.04] border border-white/[0.07]">
               <button
                 type="button"
@@ -197,7 +263,6 @@ export default function SignInPage() {
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
                 <div>
@@ -245,27 +310,21 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-rose-600 hover:from-primary-hover hover:to-rose-500 text-white font-bold text-sm shadow-[0_8px_24px_rgba(225,29,72,0.4)] transition-all"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-rose-600 hover:from-primary-hover hover:to-rose-500 text-white font-bold text-sm shadow-[0_8px_24px_rgba(225,29,72,0.4)] transition-all disabled:opacity-60"
               >
                 {submitting
-                  ? "Signing in..."
+                  ? "Syncing account..."
                   : mode === "signin"
                   ? "Sign In"
                   : "Create Account"}
               </button>
             </form>
 
-            {/* Quick Guest / Demo Sign In */}
             <div className="pt-2 border-t border-white/[0.07] text-center">
               <button
                 type="button"
-                onClick={() =>
-                  completeSignIn({
-                    name: "Cinema Member",
-                    email: "member@avyra.app",
-                    createdAt: new Date().toISOString(),
-                  })
-                }
+                disabled={submitting}
+                onClick={handleDemoSignIn}
                 className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] text-xs font-semibold text-neutral-300 hover:text-white transition-colors"
               >
                 Continue with Instant Demo Profile &rarr;

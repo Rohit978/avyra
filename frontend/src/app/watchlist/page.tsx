@@ -4,28 +4,43 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { MediaSummary } from "../../lib/api";
 import MediaCard from "../../components/MediaCard";
+import {
+  AUTH_EVENT,
+  getCurrentUser,
+  getWatchlist,
+  pullAccountSync,
+  saveWatchlist,
+  SYNC_EVENT,
+} from "../../lib/sync";
 
 export default function WatchlistPage() {
   const [items, setItems] = useState<MediaSummary[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setItems(parsed);
-      }
-    } catch {}
-    setLoaded(true);
+    const refresh = () => {
+      setItems(getWatchlist());
+      setUserEmail(getCurrentUser()?.email || null);
+      setLoaded(true);
+    };
+
+    refresh();
+    pullAccountSync();
+
+    window.addEventListener(SYNC_EVENT, refresh);
+    window.addEventListener(AUTH_EVENT, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(SYNC_EVENT, refresh);
+      window.removeEventListener(AUTH_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
   }, []);
 
   const clearList = () => {
-    try {
-      localStorage.removeItem("avyra_watchlist");
-      localStorage.removeItem("cineverse_watchlist");
-      setItems([]);
-    } catch {}
+    saveWatchlist([]);
+    setItems([]);
   };
 
   return (
@@ -36,8 +51,14 @@ export default function WatchlistPage() {
             <span className="w-1.5 h-8 bg-gradient-to-b from-primary to-amber-400 rounded-full" />
             My List
           </h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            Your saved movies, TV series, and anime ready to watch anytime.
+          <p className="text-sm text-neutral-400 mt-1 flex items-center gap-2">
+            <span>Your saved movies, TV series, and anime ready to watch anytime.</span>
+            {userEmail && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Synced to {userEmail}
+              </span>
+            )}
           </p>
         </div>
 
@@ -62,7 +83,7 @@ export default function WatchlistPage() {
           </div>
           <h2 className="text-xl font-bold text-white">Your list is empty</h2>
           <p className="text-sm text-neutral-400">
-            Tap <strong>+ My List</strong> on any featured movie or series to bookmark it here.
+            Tap <strong>+ My List</strong> or <strong>Add to Watchlist</strong> on any movie, series, or anime to bookmark it here.
           </p>
           <Link
             href="/"
