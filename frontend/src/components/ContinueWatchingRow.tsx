@@ -25,7 +25,7 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("cineverse_continue_watching");
+      const saved = localStorage.getItem("avyra_continue_watching") || localStorage.getItem("cineverse_continue_watching");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -111,7 +111,10 @@ export default function ContinueWatchingRow({ fallbackItems }: ContinueWatchingR
                   <img
                     src={imgSrc}
                     alt={item.title}
+                    width={480}
+                    height={270}
                     loading="lazy"
+                    decoding="async"
                     onError={() =>
                       setFailedImages((prev) => ({ ...prev, [item.id]: true }))
                     }

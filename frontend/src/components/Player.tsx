@@ -117,7 +117,7 @@ export default function Player({ playback }: PlayerProps) {
 
     const originalOpen = window.open;
     (window as any).open = function (...args: any[]) {
-      console.log("🛡️ CineVerse Ad Shield: Blocked unauthorized pop-up", args);
+      console.log("🛡️ Avyra Ad Shield: Blocked unauthorized pop-up", args);
       return null;
     };
 

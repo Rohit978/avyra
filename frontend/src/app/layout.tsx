@@ -18,9 +18,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "CineVerse — Stream Movies, TV Series & Anime",
+  title: "Avyra — Watch Movies, TV Series & Anime Online in HD",
   description:
-    "Luxury dark-mode cinema discovery and streaming platform for films, episodic series, and anime with personal watchlists.",
+    "Watch popular movies, top-rated TV series, and sub/dub anime online in HD on Avyra. Browse trending releases, episode guides, official trailers, and sync your personal watchlist.",
 };
 
 export default function RootLayout({

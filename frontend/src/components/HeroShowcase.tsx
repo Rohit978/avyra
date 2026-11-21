@@ -28,7 +28,7 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("cineverse_watchlist");
+      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
       if (raw) {
         const parsed: MediaSummary[] = JSON.parse(raw);
         if (Array.isArray(parsed)) {
@@ -55,13 +55,13 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
 
   const toggleMyList = () => {
     try {
-      const raw = localStorage.getItem("cineverse_watchlist");
+      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
       const list: MediaSummary[] = raw ? JSON.parse(raw) : [];
       const exists = list.some((m) => m.id === current.id);
       const next = exists
         ? list.filter((m) => m.id !== current.id)
         : [current, ...list];
-      localStorage.setItem("cineverse_watchlist", JSON.stringify(next));
+      localStorage.setItem("avyra_watchlist", JSON.stringify(next));
       setSavedIds(next.map((m) => m.id));
     } catch {}
   };
@@ -75,6 +75,9 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
             key={current.id}
             src={current.backdrop_url}
             alt={current.title}
+            width={1280}
+            height={720}
+            decoding="async"
             onError={() =>
               setFailedBackdrops((prev) => ({ ...prev, [current.id]: true }))
             }
@@ -123,10 +126,10 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
               ))}
             </div>
 
-            {/* Display Title */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.05] drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+            {/* Slide Display Title (H2 so page H1 remains site-level) */}
+            <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.05] drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
               {current.title}
-            </h1>
+            </h2>
 
             {/* Synopsis */}
             {current.overview && (
@@ -152,7 +155,9 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
                   onClick={() => setTrailerKey(current.trailer_key || null)}
                   className="inline-flex items-center gap-2 bg-white/[0.1] hover:bg-white/[0.18] text-white font-semibold px-5 py-3.5 rounded-2xl border border-white/15 backdrop-blur-xl transition-all hover:scale-[1.03] active:scale-95 text-sm sm:text-base"
                 >
-                  <span>🎬</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
                   <span>Trailer</span>
                 </button>
               )}
@@ -209,7 +214,9 @@ export default function HeroShowcase({ media, items }: HeroShowcaseProps) {
           >
             <div className="flex items-center justify-between px-5 py-3 bg-[#0e1018] border-b border-white/10">
               <span className="text-sm font-bold text-white flex items-center gap-2">
-                <span>🎬</span>
+                <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
                 {current.title} — Official Trailer
               </span>
               <button

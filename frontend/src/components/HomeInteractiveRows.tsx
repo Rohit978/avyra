@@ -8,6 +8,7 @@ import TopTenRow from "./TopTenRow";
 import ContinueWatchingRow from "./ContinueWatchingRow";
 
 interface HomeInteractiveRowsProps {
+  top10Items: MediaSummary[];
   trending: MediaSummary[];
   topRatedMovies: MediaSummary[];
   topRatedTv: MediaSummary[];
@@ -18,7 +19,7 @@ interface HomeInteractiveRowsProps {
 
 const FILTER_PILLS = [
   { id: "ALL", label: "All" },
-  { id: "TOP8", label: "★ 8.0+ Acclaimed" },
+  { id: "TOP8", label: "8.0+ Acclaimed" },
   { id: "Sci-Fi", label: "Sci-Fi" },
   { id: "Action", label: "Action" },
   { id: "Drama", label: "Drama" },
@@ -28,6 +29,7 @@ const FILTER_PILLS = [
 ];
 
 export default function HomeInteractiveRows({
+  top10Items,
   trending,
   topRatedMovies,
   topRatedTv,
@@ -58,7 +60,7 @@ export default function HomeInteractiveRows({
   const filteredAnime = useMemo(() => filterList(anime), [anime, activeFilter]);
 
   const handleSurpriseMe = () => {
-    const pool = [...topRatedMovies, ...trending, ...topRatedTv].filter(
+    const pool = [...topRatedMovies, ...top10Items, ...topRatedTv].filter(
       (m) => m.vote_average >= 7.5
     );
     if (pool.length === 0) return;
@@ -67,7 +69,7 @@ export default function HomeInteractiveRows({
     setTimeout(() => {
       setShuffling(false);
       router.push(`/media/${pick.id}`);
-    }, 350);
+    }, 300);
   };
 
   return (
@@ -99,37 +101,57 @@ export default function HomeInteractiveRows({
             disabled={shuffling}
             className="shrink-0 inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 hover:from-amber-500/35 hover:to-primary/35 border border-amber-400/35 text-xs font-extrabold text-amber-200 transition-all hover:scale-[1.03] active:scale-95"
           >
-            <span className={shuffling ? "animate-spin" : ""}>🎲</span>
+            <svg
+              className={`w-3.5 h-3.5 ${shuffling ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"
+              />
+            </svg>
             <span>{shuffling ? "Picking..." : "Surprise Me"}</span>
           </button>
         </div>
       </div>
 
-      {/* Top 10 Today Numbered Showcase */}
-      {activeFilter === "ALL" && <TopTenRow title="Top 10 Today" items={trending} />}
+      {/* Top 10 Today Numbered Showcase (Distinct from Trending row below) */}
+      {activeFilter === "ALL" && <TopTenRow title="Top 10 Today" items={top10Items} />}
 
-      {/* Continue Watching (Auto-populated from watched titles) */}
-      {activeFilter === "ALL" && <ContinueWatchingRow fallbackItems={trending} />}
+      {/* Continue Watching */}
+      {activeFilter === "ALL" && <ContinueWatchingRow fallbackItems={top10Items} />}
 
-      {/* Critically Acclaimed / Top Rated Movies (Live) */}
+      {/* Top Rated Movies */}
       {filteredTopMovies.length > 0 && (
         <MediaCarousel
-          title="Top Rated Movies"
+          title="Critically Acclaimed Films"
           items={filteredTopMovies}
           viewAllHref="/movies"
         />
       )}
 
-      {/* Trending Now */}
+      {/* Trending Now (Mixes Movies & Series — no misleading /movies See All link; distinct from Top 10) */}
       {filteredTrending.length > 0 && (
         <MediaCarousel
-          title={activeFilter === "ALL" ? "Trending Now" : `Trending • ${activeFilter}`}
+          title={activeFilter === "ALL" ? "Trending Across Film & TV" : `Trending • ${activeFilter}`}
           items={filteredTrending}
-          viewAllHref="/movies"
         />
       )}
 
-      {/* Top Rated TV Series (Live) */}
+      {/* Top Anime (Powered by AniList with Sub/Dub, Episode Count, Season & AL Score) */}
+      {filteredAnime.length > 0 && (
+        <MediaCarousel
+          title="Trending Anime (Sub & Dub)"
+          items={filteredAnime}
+          viewAllHref="/anime"
+        />
+      )}
+
+      {/* Top Rated TV Series */}
       {filteredTopTv.length > 0 && (
         <MediaCarousel
           title="Top Rated TV Series"
@@ -138,7 +160,7 @@ export default function HomeInteractiveRows({
         />
       )}
 
-      {/* Popular Movies */}
+      {/* Popular Movies (Deduplicated against Top 10, Trending, and Acclaimed) */}
       {filteredPopMovies.length > 0 && (
         <MediaCarousel
           title="Popular Movies"
@@ -150,18 +172,9 @@ export default function HomeInteractiveRows({
       {/* Binge-Worthy TV Series */}
       {filteredPopTv.length > 0 && (
         <MediaCarousel
-          title="Binge-Worthy TV Series"
+          title="Popular TV Series"
           items={filteredPopTv}
           viewAllHref="/tv"
-        />
-      )}
-
-      {/* Top Anime */}
-      {filteredAnime.length > 0 && (
-        <MediaCarousel
-          title="Top Anime"
-          items={filteredAnime}
-          viewAllHref="/anime"
         />
       )}
     </div>

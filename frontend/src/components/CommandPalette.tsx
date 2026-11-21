@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { getSearchSuggestions, SearchSuggestion } from "../lib/api";
 
 const QUICK_LINKS = [
-  { label: "Top Rated Movies", href: "/movies", icon: "🏆" },
-  { label: "Popular TV Series", href: "/tv", icon: "📺" },
-  { label: "Anime Catalog", href: "/anime", icon: "⚡" },
-  { label: "My Watchlist", href: "/watchlist", icon: "🔖" },
+  { label: "Top Rated Movies", href: "/movies" },
+  { label: "Popular TV Series", href: "/tv" },
+  { label: "Anime Catalog (Sub & Dub)", href: "/anime" },
+  { label: "My Watchlist", href: "/watchlist" },
 ];
 
 export default function CommandPalette() {
@@ -171,7 +171,7 @@ export default function CommandPalette() {
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    <span>{link.icon}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     <span>{link.label}</span>
                   </span>
                   <span className="text-xs text-neutral-500">↵</span>
@@ -246,7 +246,7 @@ export default function CommandPalette() {
             <span>↵ Open</span>
             <span>ESC Close</span>
           </div>
-          <span className="text-neutral-400 font-medium">CineVerse Spotlight</span>
+          <span className="text-neutral-400 font-medium">Avyra Spotlight</span>
         </div>
       </div>
     </div>

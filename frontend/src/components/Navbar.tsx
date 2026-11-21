@@ -21,7 +21,26 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const syncAuth = () => {
+      try {
+        const raw = localStorage.getItem("avyra_user");
+        setUser(raw ? JSON.parse(raw) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+    syncAuth();
+    window.addEventListener("avyra-auth-change", syncAuth);
+    window.addEventListener("storage", syncAuth);
+    return () => {
+      window.removeEventListener("avyra-auth-change", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -81,9 +100,9 @@ export default function Navbar() {
           {/* Brand Wordmark */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
-              CINE
+              AVY
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-rose-400">
-                VERSE
+                RA
               </span>
             </span>
           </Link>
@@ -208,6 +227,30 @@ export default function Navbar() {
             >
               <span className="text-[11px] font-mono text-neutral-400">⌘K</span>
             </button>
+
+            {/* Sign In / Profile Pill */}
+            {user ? (
+              <Link
+                href="/signin"
+                className="shrink-0 inline-flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-semibold text-white transition-all"
+                title={`Signed in as ${user.name}`}
+              >
+                <span className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-rose-600 text-white text-[10px] font-extrabold flex items-center justify-center">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </span>
+                <span className="hidden sm:inline max-w-[90px] truncate">{user.name}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/signin"
+                className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary hover:bg-primary-hover text-white text-xs font-bold shadow-[0_4px_16px_rgba(225,29,72,0.35)] transition-all"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Sign In</span>
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button

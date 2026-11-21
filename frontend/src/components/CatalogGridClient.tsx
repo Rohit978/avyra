@@ -130,7 +130,7 @@ export default function CatalogGridClient({
                   : "text-neutral-300 hover:text-white"
               }`}
             >
-              🔥 Popular
+              Popular
             </button>
             <button
               onClick={() => handleSortChange("rating")}
@@ -140,7 +140,7 @@ export default function CatalogGridClient({
                   : "text-neutral-300 hover:text-white"
               }`}
             >
-              ★ Top Rated
+              Top Rated
             </button>
           </div>
 

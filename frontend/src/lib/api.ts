@@ -6,6 +6,15 @@ export const API_BASE_URL =
     ? "http://127.0.0.1:8000/api/v1"
     : "");
 
+export interface AnimeMeta {
+  anilist_score?: number | null;
+  mal_id?: number | null;
+  episodes?: number | null;
+  season?: string | null;
+  sub_dub?: "SUB / DUB" | "SUB";
+  format?: string | null;
+}
+
 export interface MediaSummary {
   id: string;
   title: string;
@@ -21,6 +30,7 @@ export interface MediaSummary {
   popularity: number;
   genres: string[];
   trailer_key?: string | null;
+  anime_meta?: AnimeMeta | null;
 }
 
 export interface SearchSuggestion {
@@ -456,6 +466,178 @@ async function fetchCinemetaMeta(id: string): Promise<CinemetaMetaItem | null> {
   return null;
 }
 
+const ANILIST_GQL_URL = "https://graphql.anilist.co";
+
+interface AniListRawMedia {
+  id: number;
+  idMal?: number | null;
+  title?: { english?: string | null; romaji?: string | null; native?: string | null };
+  episodes?: number | null;
+  duration?: number | null;
+  season?: string | null;
+  seasonYear?: number | null;
+  format?: string | null;
+  status?: string | null;
+  averageScore?: number | null;
+  popularity?: number | null;
+  genres?: string[];
+  coverImage?: { extraLarge?: string | null; large?: string | null };
+  bannerImage?: string | null;
+  description?: string | null;
+  trailer?: { id?: string | null; site?: string | null } | null;
+  characters?: {
+    edges?: {
+      role?: string | null;
+      node?: {
+        id?: number;
+        name?: { full?: string | null };
+        image?: { large?: string | null };
+      };
+      voiceActors?: {
+        id?: number;
+        name?: { full?: string | null };
+        image?: { large?: string | null };
+      }[];
+    }[];
+  };
+}
+
+function stripHtml(text?: string | null): string | null {
+  if (!text) return null;
+  return text.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+function mapAniListToSummary(a: AniListRawMedia): MediaSummary {
+  const title = a.title?.english || a.title?.romaji || "Untitled Anime";
+  const score = a.averageScore || 0;
+  const seasonLabel =
+    a.season && a.seasonYear
+      ? `${a.season} ${a.seasonYear}`
+      : a.seasonYear
+      ? String(a.seasonYear)
+      : null;
+
+  return {
+    id: `al-${a.id}`,
+    title,
+    original_title: a.title?.romaji || a.title?.native || title,
+    media_type: "ANIME",
+    status: a.status || "RELEASED",
+    overview: stripHtml(a.description),
+    release_date: a.seasonYear ? `${a.seasonYear}-01-01` : null,
+    poster_url: a.coverImage?.extraLarge || a.coverImage?.large || null,
+    backdrop_url: a.bannerImage || a.coverImage?.extraLarge || null,
+    vote_average: score > 0 ? Number((score / 10).toFixed(1)) : 8.2,
+    vote_count: a.popularity || 10000,
+    popularity: a.popularity || 100,
+    genres: Array.isArray(a.genres) ? a.genres : ["Animation"],
+    trailer_key:
+      a.trailer?.site?.toLowerCase() === "youtube" ? a.trailer.id || null : null,
+    anime_meta: {
+      anilist_score: score > 0 ? score : null,
+      mal_id: a.idMal || null,
+      episodes: a.episodes || null,
+      season: seasonLabel,
+      sub_dub: a.title?.english ? "SUB / DUB" : "SUB",
+      format: a.format || "TV",
+    },
+  };
+}
+
+async function fetchAniListCatalog(
+  sort: "TRENDING_DESC" | "SCORE_DESC" | "POPULARITY_DESC" = "TRENDING_DESC",
+  page = 1,
+  perPage = 24
+): Promise<MediaSummary[]> {
+  const query = `
+    query ($page: Int, $perPage: Int, $sort: [MediaSort]) {
+      Page(page: $page, perPage: $perPage) {
+        media(type: ANIME, sort: $sort, isAdult: false) {
+          id
+          idMal
+          title { english romaji native }
+          episodes
+          duration
+          season
+          seasonYear
+          format
+          status
+          averageScore
+          popularity
+          genres
+          coverImage { extraLarge large }
+          bannerImage
+          description(asHtml: false)
+          trailer { id site }
+        }
+      }
+    }
+  `;
+  try {
+    const res = await fetch(ANILIST_GQL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query, variables: { page, perPage, sort: [sort] } }),
+      next: { revalidate: 1800 },
+    } as RequestInit);
+    if (!res.ok) return [];
+    const json = await res.json();
+    const list: AniListRawMedia[] = json?.data?.Page?.media || [];
+    return list.map(mapAniListToSummary);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchAniListById(anilistId: number): Promise<AniListRawMedia | null> {
+  const query = `
+    query ($id: Int) {
+      Media(id: $id, type: ANIME) {
+        id
+        idMal
+        title { english romaji native }
+        episodes
+        duration
+        season
+        seasonYear
+        format
+        status
+        averageScore
+        popularity
+        genres
+        coverImage { extraLarge large }
+        bannerImage
+        description(asHtml: false)
+        trailer { id site }
+        characters(sort: [ROLE, RELEVANCE], perPage: 8) {
+          edges {
+            role
+            node { id name { full } image { large } }
+            voiceActors(language: JAPANESE, sort: [RELEVANCE]) {
+              id
+              name { full }
+              image { large }
+            }
+          }
+        }
+      }
+    }
+  `;
+  try {
+    const res = await fetch(ANILIST_GQL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query, variables: { id: anilistId } }),
+      next: { revalidate: 3600 },
+    } as RequestInit);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data?.Media || null;
+  } catch {
+    return null;
+  }
+}
+
 async function safeFetch<T>(url: string, fallback: T): Promise<T> {
   if (
     !url ||
@@ -511,12 +693,14 @@ export async function getCuratedCollection(
 
     if (collection === "popular") {
       if (mediaType === "MOVIE") {
-        const movies = await fetchCinemetaCatalog("movie", "top");
-        if (movies.length > 0) return movies.slice(0, 30);
+        const movies = await fetchCinemetaCatalog("movie", "top", { skip: 15 });
+        if (movies.length > 0) return movies.slice(0, 24);
       } else if (mediaType === "TV_SHOW") {
-        const series = await fetchCinemetaCatalog("series", "top");
-        if (series.length > 0) return series.slice(0, 30);
+        const series = await fetchCinemetaCatalog("series", "top", { skip: 15 });
+        if (series.length > 0) return series.slice(0, 24);
       } else if (mediaType === "ANIME") {
+        const anilistAnime = await fetchAniListCatalog("TRENDING_DESC", 1, 24);
+        if (anilistAnime.length > 0) return anilistAnime;
         const anime = await fetchCinemetaCatalog("series", "top", { genre: "Animation" });
         if (anime.length > 0) return anime.slice(0, 24);
       }
@@ -569,17 +753,24 @@ export async function browseMedia(params: {
         skip,
       });
     } else if (params.media_type === "ANIME") {
-      const [animSeries, animMovies] = await Promise.all([
-        fetchCinemetaCatalog("series", catalogKind, { genre: "Animation", skip }),
-        fetchCinemetaCatalog("movie", catalogKind, { genre: "Animation", skip }),
-      ]);
-      const merged: MediaSummary[] = [];
-      const maxLen = Math.max(animSeries.length, animMovies.length);
-      for (let i = 0; i < maxLen; i++) {
-        if (animSeries[i]) merged.push(animSeries[i]);
-        if (animMovies[i]) merged.push(animMovies[i]);
+      const anilistSort =
+        params.sort_by === "rating" ? "SCORE_DESC" : "TRENDING_DESC";
+      const anilistItems = await fetchAniListCatalog(anilistSort, page, limit);
+      if (anilistItems.length > 0) {
+        live = anilistItems;
+      } else {
+        const [animSeries, animMovies] = await Promise.all([
+          fetchCinemetaCatalog("series", catalogKind, { genre: "Animation", skip }),
+          fetchCinemetaCatalog("movie", catalogKind, { genre: "Animation", skip }),
+        ]);
+        const merged: MediaSummary[] = [];
+        const maxLen = Math.max(animSeries.length, animMovies.length);
+        for (let i = 0; i < maxLen; i++) {
+          if (animSeries[i]) merged.push(animSeries[i]);
+          if (animMovies[i]) merged.push(animMovies[i]);
+        }
+        live = merged;
       }
-      live = merged;
     } else {
       const [m, s] = await Promise.all([
         fetchCinemetaCatalog("movie", catalogKind, { genre: params.genre, skip }),
@@ -729,7 +920,73 @@ function resolveTmdbId(id: string): { tmdb_id: string; title: string; media_type
   return { tmdb_id: "693134", title: byTitle?.title || "Dune: Part Two", media_type: byTitle?.media_type || "MOVIE" };
 }
 
+async function resolveAniListStreamIds(
+  a: AniListRawMedia
+): Promise<{ tmdbId: string | null; imdbId: string | null }> {
+  const candidates = [a.title?.english, a.title?.romaji].filter(
+    (t): t is string => Boolean(t && t.trim())
+  );
+  for (const title of candidates) {
+    try {
+      const kind = a.format === "MOVIE" ? "movie" : "series";
+      const matches = await fetchCinemetaCatalog(kind, "top", { search: title });
+      const topMatch = matches[0];
+      if (topMatch?.id?.startsWith("tt")) {
+        const meta = await fetchCinemetaMeta(topMatch.id);
+        return {
+          tmdbId: meta?.moviedb_id ? String(meta.moviedb_id) : null,
+          imdbId: topMatch.id,
+        };
+      }
+    } catch {}
+  }
+  return { tmdbId: null, imdbId: null };
+}
+
 export async function getMediaDetail(id: string): Promise<MediaDetail | null> {
+  if (id.startsWith("al-")) {
+    const anilistId = parseInt(id.slice(3), 10);
+    if (Number.isFinite(anilistId)) {
+      const raw = await fetchAniListById(anilistId);
+      if (raw) {
+        const summary = mapAniListToSummary(raw);
+        const streamIds = await resolveAniListStreamIds(raw);
+        const provenance = [
+          { provider: "anilist", external_id: String(raw.id) },
+        ];
+        if (raw.idMal) {
+          provenance.push({ provider: "mal", external_id: String(raw.idMal) });
+        }
+        if (streamIds.tmdbId) {
+          provenance.push({ provider: "tmdb", external_id: streamIds.tmdbId });
+        }
+        if (streamIds.imdbId) {
+          provenance.push({ provider: "imdb", external_id: streamIds.imdbId });
+        }
+        const titles = [
+          { title: summary.title, title_type: "english", language: "en" },
+        ];
+        if (raw.title?.romaji && raw.title.romaji !== summary.title) {
+          titles.push({ title: raw.title.romaji, title_type: "romaji", language: "ja-ro" });
+        }
+        if (raw.title?.native) {
+          titles.push({ title: raw.title.native, title_type: "native", language: "ja" });
+        }
+        return {
+          ...summary,
+          runtime: raw.duration || 24,
+          original_language: "ja",
+          country_of_origin: "JP",
+          is_adult: false,
+          titles,
+          provenance,
+          season_count: raw.format === "MOVIE" ? 0 : 1,
+          episode_count: raw.episodes || (raw.format === "MOVIE" ? 1 : 12),
+        };
+      }
+    }
+  }
+
   if (id.startsWith("tt")) {
     const meta = await fetchCinemetaMeta(id);
     if (meta) {
@@ -780,6 +1037,30 @@ export async function getMediaDetail(id: string): Promise<MediaDetail | null> {
 }
 
 export async function getMediaCredits(id: string): Promise<MediaCredits> {
+  if (id.startsWith("al-")) {
+    const anilistId = parseInt(id.slice(3), 10);
+    if (Number.isFinite(anilistId)) {
+      const raw = await fetchAniListById(anilistId);
+      const edges = raw?.characters?.edges || [];
+      if (edges.length > 0) {
+        return {
+          cast: edges.map((edge, idx) => {
+            const va = edge.voiceActors?.[0];
+            return {
+              id: `al-cast-${anilistId}-${idx}`,
+              person_id: `al-va-${va?.id || idx}`,
+              name: va?.name?.full || edge.node?.name?.full || "Voice Actor",
+              character_name: edge.node?.name?.full || "Character",
+              profile_path: va?.image?.large || edge.node?.image?.large || null,
+              order: idx,
+            };
+          }),
+          crew: [],
+        };
+      }
+    }
+  }
+
   if (id.startsWith("tt")) {
     const meta = await fetchCinemetaMeta(id);
     if (meta && (meta.cast?.length || meta.director?.length)) {
@@ -838,6 +1119,39 @@ export async function getMediaCredits(id: string): Promise<MediaCredits> {
 }
 
 export async function getMediaSeasons(id: string): Promise<SeasonDetail[]> {
+  if (id.startsWith("al-")) {
+    const anilistId = parseInt(id.slice(3), 10);
+    if (Number.isFinite(anilistId)) {
+      const raw = await fetchAniListById(anilistId);
+      if (raw && raw.format !== "MOVIE") {
+        const epTotal = Math.min(Math.max(raw.episodes || 12, 1), 100);
+        const episodes: Episode[] = Array.from({ length: epTotal }, (_, idx) => ({
+          id: `${id}-s1-e${idx + 1}`,
+          season_id: `${id}-s1`,
+          media_id: id,
+          episode_number: idx + 1,
+          title: `Episode ${idx + 1} (SUB / DUB)`,
+          overview: `Stream Episode ${idx + 1} of ${raw.title?.english || raw.title?.romaji || "Anime"}.`,
+          still_path: raw.bannerImage || raw.coverImage?.extraLarge || null,
+          air_date: raw.seasonYear ? `${raw.seasonYear}-01-01` : null,
+          runtime: raw.duration || 24,
+        }));
+        return [
+          {
+            id: `${id}-season-1`,
+            season_number: 1,
+            title: raw.season && raw.seasonYear ? `Season 1 (${raw.season} ${raw.seasonYear})` : "Season 1",
+            overview: stripHtml(raw.description),
+            poster_path: raw.coverImage?.extraLarge || null,
+            air_date: raw.seasonYear ? `${raw.seasonYear}-01-01` : null,
+            episode_count: epTotal,
+            episodes,
+          },
+        ];
+      }
+    }
+  }
+
   if (id.startsWith("tt")) {
     const meta = await fetchCinemetaMeta(id);
     if (meta?.videos && meta.videos.length > 0) {
@@ -919,6 +1233,20 @@ export async function getPlaybackOptions(
 
   const sNum = season || 1;
   const epNum = episode || 1;
+
+  // Live AniList al-... title playback resolution
+  if (id.startsWith("al-")) {
+    const anilistId = parseInt(id.slice(3), 10);
+    if (Number.isFinite(anilistId)) {
+      const raw = await fetchAniListById(anilistId);
+      if (raw) {
+        const streamIds = await resolveAniListStreamIds(raw);
+        if (streamIds.imdbId) {
+          return getPlaybackOptions(streamIds.imdbId, sNum, epNum);
+        }
+      }
+    }
+  }
 
   // Live Cinemeta tt... title playback resolution
   if (id.startsWith("tt")) {

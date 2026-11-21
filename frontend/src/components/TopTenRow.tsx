@@ -31,7 +31,7 @@ export default function TopTenRow({ title = "Top 10 Today", items }: TopTenRowPr
             {title}
           </h2>
           <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/35 text-[10px] font-extrabold uppercase tracking-widest text-rose-300">
-            Live Rankings
+            Trending today
           </span>
         </div>
 
@@ -96,7 +96,10 @@ export default function TopTenRow({ title = "Top 10 Today", items }: TopTenRowPr
                     <img
                       src={item.poster_url}
                       alt={item.title}
+                      width={300}
+                      height={450}
                       loading="lazy"
+                      decoding="async"
                       onError={() =>
                         setFailedImages((prev) => ({ ...prev, [item.id]: true }))
                       }

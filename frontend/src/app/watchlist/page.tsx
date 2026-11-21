@@ -11,7 +11,7 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("cineverse_watchlist");
+      const raw = localStorage.getItem("avyra_watchlist") || localStorage.getItem("cineverse_watchlist");
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setItems(parsed);
@@ -22,6 +22,7 @@ export default function WatchlistPage() {
 
   const clearList = () => {
     try {
+      localStorage.removeItem("avyra_watchlist");
       localStorage.removeItem("cineverse_watchlist");
       setItems([]);
     } catch {}
@@ -54,7 +55,11 @@ export default function WatchlistPage() {
         <div className="text-sm text-neutral-400">Loading your list...</div>
       ) : items.length === 0 ? (
         <div className="rounded-3xl bg-surface border border-white/[0.08] p-12 text-center max-w-lg mx-auto mt-10 space-y-4">
-          <div className="text-4xl">🎬</div>
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center mx-auto text-neutral-400">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+          </div>
           <h2 className="text-xl font-bold text-white">Your list is empty</h2>
           <p className="text-sm text-neutral-400">
             Tap <strong>+ My List</strong> on any featured movie or series to bookmark it here.

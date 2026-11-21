@@ -11,19 +11,23 @@ interface MediaCardProps {
 export default function MediaCard({ media }: MediaCardProps) {
   const [imgError, setImgError] = useState(false);
   const year = media.release_date ? media.release_date.slice(0, 4) : null;
+  const animeMeta = media.anime_meta;
 
   return (
     <Link
       href={`/media/${media.id}`}
       className="group relative flex flex-col rounded-2xl overflow-hidden bg-surface border border-white/[0.07] transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-[0_0_28px_rgba(225,29,72,0.32)]"
     >
-      {/* 2:3 Poster */}
+      {/* 2:3 Poster with fixed aspect ratio & explicit dimensions to prevent CLS */}
       <div className="relative w-full aspect-[2/3] bg-neutral-900 overflow-hidden">
         {media.poster_url && !imgError ? (
           <img
             src={media.poster_url}
             alt={media.title}
+            width={300}
+            height={450}
             loading="lazy"
+            decoding="async"
             onError={() => setImgError(true)}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -57,22 +61,41 @@ export default function MediaCard({ media }: MediaCardProps) {
           </div>
         </div>
 
-        {/* Rating Badge */}
-        {media.vote_average > 0 && (
+        {/* Rating Badge: AniList Score (%) for Anime, IMDb Star Rating for Movies/TV */}
+        {animeMeta?.anilist_score ? (
+          <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md border border-cyan-400/30 rounded-lg px-2 py-0.5 text-[11px] font-extrabold text-cyan-300 flex items-center gap-1 shadow-md">
+            <span>AL</span>
+            <span>{animeMeta.anilist_score}%</span>
+          </div>
+        ) : media.vote_average > 0 ? (
           <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-md border border-white/10 rounded-lg px-2 py-0.5 text-[11px] font-bold text-amber-400 flex items-center gap-1 shadow-md">
             <span>★</span>
             <span>{media.vote_average.toFixed(1)}</span>
           </div>
-        )}
+        ) : null}
 
-        {/* Media Type Pill */}
-        <div className="absolute top-2.5 left-2.5 bg-primary/90 backdrop-blur-md rounded-lg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md">
-          {media.media_type === "TV_SHOW"
-            ? "TV"
-            : media.media_type === "MOVIE"
-            ? "FILM"
-            : media.media_type}
+        {/* Media Type / Sub-Dub Pill */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1">
+          <span className="bg-primary/90 backdrop-blur-md rounded-lg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-md">
+            {media.media_type === "TV_SHOW"
+              ? "TV"
+              : media.media_type === "MOVIE"
+              ? "FILM"
+              : "ANIME"}
+          </span>
+          {animeMeta?.sub_dub && (
+            <span className="bg-black/75 backdrop-blur-md border border-white/15 rounded-lg px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300 shadow-md">
+              {animeMeta.sub_dub}
+            </span>
+          )}
         </div>
+
+        {/* Bottom Episode Count Pill on Poster for Anime */}
+        {animeMeta?.episodes && (
+          <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md border border-white/10 rounded-md px-2 py-0.5 text-[10px] font-bold text-neutral-200">
+            {animeMeta.episodes} EPS
+          </div>
+        )}
       </div>
 
       {/* Info Footer */}
@@ -81,7 +104,7 @@ export default function MediaCard({ media }: MediaCardProps) {
           {media.title}
         </h3>
         <div className="flex items-center justify-between mt-1 text-[11px] text-neutral-400 font-medium">
-          <span>{year || "TBA"}</span>
+          <span>{animeMeta?.season || year || "TBA"}</span>
           {media.genres.length > 0 && (
             <span className="truncate max-w-[100px] text-neutral-500">
               {media.genres[0]}

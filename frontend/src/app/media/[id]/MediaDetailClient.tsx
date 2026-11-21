@@ -84,7 +84,7 @@ export default function MediaDetailClient({
   // Auto-record watched title & exact episode to Continue Watching
   useEffect(() => {
     try {
-      const key = "cineverse_continue_watching";
+      const key = "avyra_continue_watching";
       const raw = localStorage.getItem(key);
       const list = raw ? JSON.parse(raw) : [];
       const filtered = Array.isArray(list)
@@ -220,11 +220,30 @@ export default function MediaDetailClient({
               <span className="bg-primary px-2.5 py-0.5 rounded text-xs font-bold uppercase text-white">
                 {media.media_type}
               </span>
-              {media.release_date && (
+              {media.anime_meta?.sub_dub && (
+                <span className="bg-amber-500/20 border border-amber-400/40 text-amber-300 px-2.5 py-0.5 rounded text-xs font-extrabold uppercase">
+                  {media.anime_meta.sub_dub}
+                </span>
+              )}
+              {media.anime_meta?.anilist_score ? (
+                <span className="text-xs text-cyan-300 font-extrabold bg-cyan-950/70 px-2.5 py-0.5 rounded border border-cyan-500/40">
+                  AniList {media.anime_meta.anilist_score}%
+                </span>
+              ) : null}
+              {media.anime_meta?.episodes ? (
+                <span className="text-xs text-neutral-200 font-semibold bg-white/[0.08] px-2.5 py-0.5 rounded border border-white/10">
+                  {media.anime_meta.episodes} Episodes
+                </span>
+              ) : null}
+              {media.anime_meta?.season ? (
+                <span className="text-xs text-neutral-300 font-medium bg-white/[0.06] px-2.5 py-0.5 rounded border border-white/10">
+                  {media.anime_meta.season}
+                </span>
+              ) : media.release_date ? (
                 <span className="text-xs text-neutral-400">
                   {media.release_date.slice(0, 4)}
                 </span>
-              )}
+              ) : null}
               {media.vote_average > 0 && (
                 <span className="text-xs text-amber-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-neutral-800">
                   ★ {media.vote_average.toFixed(1)}
